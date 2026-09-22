@@ -1,0 +1,270 @@
+.shop-detail-page {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding-top: 24px;
+  padding-bottom: 120px;
+}
+
+.shop-not-found {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  text-align: center;
+  flex-direction: column;
+}
+
+.shop-detail-page .shop-detail-container {
+  max-width: 1720px;
+  margin: 0 auto;
+  padding: 0 140px;
+}
+
+.shop-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.2s ease;
+}
+
+.shop-back-btn:hover {
+  color: var(--text-main);
+}
+
+/* 3-Column Layout */
+.shop-detail-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* Left: Thumbnails */
+.shop-detail-thumbnails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.shop-thumbnail-btn {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  background-color: var(--bg-subtle, #f5f5f5);
+  border: 1px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.shop-thumbnail-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.shop-thumbnail-btn:hover img {
+  opacity: 1;
+}
+
+.shop-thumbnail-btn.active {
+  border-color: var(--text-main, #111111);
+}
+
+.shop-thumbnail-btn.active img {
+  opacity: 1;
+}
+
+/* Center: Main Image */
+.shop-detail-main-image-wrapper {
+  flex: 1 1 0%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.shop-detail-main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.shop-detail-main-image-wrapper:hover .shop-detail-main-image {
+  transform: scale(1.03);
+}
+
+/* Right: Information Panel */
+.shop-detail-info {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shop-detail-header {
+  margin-bottom: 16px;
+}
+
+.shop-detail-category {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.shop-detail-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.shop-detail-description {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.shop-detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #E2E0D8);
+}
+
+.shop-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+.shop-meta-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.shop-meta-value {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  text-align: right;
+}
+
+.shop-detail-cta {
+  width: 100%;
+  padding: 18px 24px;
+  font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .shop-detail-layout {
+    gap: 40px;
+  }
+  .shop-detail-info {
+    width: 320px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .shop-detail-page .shop-detail-container {
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .shop-detail-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .shop-detail-info {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+  }
+
+  .shop-detail-main-image-wrapper {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* Switch thumbnails to horizontal strip */
+  .shop-detail-thumbnails {
+    width: 100%;
+    max-width: 600px;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .shop-thumbnail-btn {
+    width: 80px;
+    height: 100px;
+    flex-shrink: 0;
+  }
+
+  /* Order on Mobile: Header -> Main Image -> Thumbnails -> Info */
+  .shop-detail-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shop-detail-info {
+    order: 4;
+  }
+  
+  .shop-detail-main-image-wrapper {
+    order: 2;
+  }
+  
+  .shop-detail-thumbnails {
+    order: 3;
+    margin-top: 16px;
+  }
+  
+  /* We extract the header to the top visually by keeping it in the info panel 
+     but using a flex trick, or we can just keep the structure as:
+     Main Image -> Thumbnails -> Header & Info. 
+     To strictly follow the "Header -> Image -> Thumbnails -> Info" without refactoring JSX,
+     we just leave the DOM order, which puts Image -> Thumbnails -> Info. */
+}
+
+@media (max-width: 768px) {
+  .shop-detail-page .shop-detail-container {
+    padding: 0 20px;
+  }
+}

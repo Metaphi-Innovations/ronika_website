@@ -66,11 +66,11 @@ export default function GalleryPage() {
     <main className="psycolops-gallery-page animate-fade-in">
       <section className="psycolops-gallery-section">
         <div className="container">
-          
+
           {/* Header Subtitle */}
           <div className="gallery-header-block">
             <h2 className="gallery-subtitle-text">
-              Here's a compilation of my work including personal as well as client projects.
+              Here's a compilation of my <span className="font-italic">Work</span> including <span className="font-italic">Personal</span> as well as <span className="font-italic">Client Projects.</span>
             </h2>
           </div>
 
@@ -92,9 +92,9 @@ export default function GalleryPage() {
             {filteredItems.map((item) => (
               <div key={item.globalIndex} className="gallery-wall-card">
                 <div className="gallery-card-frame">
-                  <img 
-                    src={item.src} 
-                    alt={item.caption} 
+                  <img
+                    src={item.src}
+                    alt={item.caption}
                     loading="lazy"
                     className="gallery-card-img"
                   />

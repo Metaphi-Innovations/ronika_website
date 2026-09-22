@@ -9,6 +9,9 @@ import GalleryPage from './pages/GalleryPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import ShopPage from './pages/ShopPage';
+import ShopProductDetailPage from './pages/ShopProductDetailPage';
+import ShopEnquiryPage from './pages/ShopEnquiryPage';
 import './styles/global.css';
 
 export default function App() {
@@ -25,6 +28,9 @@ export default function App() {
           <Route path="/work/:slug" element={<ProjectDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/enquiry/:productSlug" element={<ShopEnquiryPage />} />
+          <Route path="/shop/:productSlug" element={<ShopProductDetailPage />} />
         </Routes>
       </main>
       <Footer />

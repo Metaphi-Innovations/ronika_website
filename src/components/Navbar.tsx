@@ -15,7 +15,8 @@ export default function Navbar() {
     { label: 'ABOUT', path: '/about' },
     { label: 'WORK', path: '/work' },
     { label: 'GALLERY', path: '/gallery' },
-    { label: 'CONTACT', path: '/contact' }
+    { label: 'CONTACT', path: '/contact' },
+    { label: 'SHOP', path: '/shop' }
   ];
 
   const toggleMobileMenu = () => {

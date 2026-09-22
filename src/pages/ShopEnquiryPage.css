@@ -1,0 +1,232 @@
+.shop-enquiry-page {
+  width: 100%;
+  background-color: var(--bg-primary);
+  padding-top: 24px;
+  padding-bottom: 120px;
+}
+
+.shop-enquiry-page .shop-enquiry-container {
+  max-width: 1720px;
+  margin: 0 auto;
+  padding: 0 140px;
+}
+
+.shop-enquiry-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* Left: Product Context */
+.shop-enquiry-context {
+  flex: 1;
+  max-width: 480px;
+}
+
+.shop-enquiry-heading {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.shop-enquiry-subheading {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.shop-enquiry-product-card {
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.enquiry-product-image-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enquiry-product-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.05));
+}
+
+.enquiry-product-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.enquiry-product-category {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.enquiry-product-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.enquiry-product-desc {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Right: Form Section */
+.shop-enquiry-form-section {
+  flex: 1.5;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color, #E2E0D8);
+  padding: 32px;
+  border-radius: 2px;
+}
+
+.shop-enquiry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 16px;
+  border: 1px solid var(--border-color, #E2E0D8);
+  border-radius: 2px;
+  background-color: transparent;
+  color: var(--text-main);
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--text-main);
+}
+
+.disabled-input {
+  background-color: var(--bg-subtle, #f5f5f5);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.btn-submit-enquiry {
+  margin-top: 16px;
+  padding: 18px 24px;
+}
+
+/* Success State */
+.shop-enquiry-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  min-height: 400px;
+}
+
+.success-icon {
+  color: #10B981;
+  margin-bottom: 24px;
+}
+
+.shop-enquiry-success h3 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin: 0 0 16px 0;
+}
+
+.shop-enquiry-success p {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 400px;
+}
+
+.mt-4 {
+  margin-top: 32px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .shop-enquiry-layout {
+    flex-direction: column;
+    gap: 60px;
+  }
+
+  .shop-enquiry-context,
+  .shop-enquiry-form-section {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 1023px) {
+  .shop-enquiry-page .shop-enquiry-container {
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .shop-enquiry-page .shop-enquiry-container {
+    padding: 0 20px;
+  }
+  
+  .shop-enquiry-form-section {
+    padding: 32px 24px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 24px;
+  }
+}

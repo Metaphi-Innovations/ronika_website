@@ -4,15 +4,19 @@
 
 .about-editorial-page {
   width: 100%;
-  background-color: #FAFAF8; /* Match reference off-white */
+  background-color: #FAFAF8;
+  /* Match reference off-white */
   color: #111111;
   height: calc(100vh - 60px);
   display: flex;
-  align-items: center; /* Center content to fit exactly in one screen */
-  padding-top: 40px; /* Guaranteed minimum gap below navbar */
+  align-items: center;
+  /* Center content to fit exactly in one screen */
+  padding-top: 40px;
+  /* Guaranteed minimum gap below navbar */
   padding-bottom: 40px;
   box-sizing: border-box;
-  overflow: hidden; /* Ensure it stays within viewport on desktop */
+  overflow: hidden;
+  /* Ensure it stays within viewport on desktop */
 }
 
 .about-editorial-page .about-container {
@@ -31,7 +35,7 @@
   display: grid;
   /* 50-52% / 48-50% desktop split */
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  align-items: center; 
+  align-items: center;
   gap: clamp(40px, 4vw, 80px);
 }
 
@@ -52,7 +56,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 56px; /* Increased space above "I am Ronika" */
+  margin-bottom: 56px;
+  /* Increased space above "I am Ronika" */
   font-family: 'Inter', sans-serif;
   font-size: 12px;
   letter-spacing: 0.15em;
@@ -146,7 +151,8 @@
   display: block;
   margin-left: auto;
   margin-right: auto;
-  mix-blend-mode: multiply; /* Blends white image background with the off-white container */
+  mix-blend-mode: multiply;
+  /* Blends white image background with the off-white container */
   /* NO borders, shadows, or cropped containers */
 }
 
@@ -158,7 +164,7 @@
     grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
     gap: 40px;
   }
-  
+
   .about-main-heading {
     font-size: clamp(28px, 3.5vw, 40px);
   }
@@ -175,7 +181,8 @@
   }
 
   .about-content-wrapper {
-    grid-template-columns: 1fr; /* Stack layout */
+    grid-template-columns: 1fr;
+    /* Stack layout */
     gap: 60px;
   }
 
@@ -231,8 +238,9 @@
     text-align: center;
     justify-content: center;
   }
-  
+
   .about-scroll-indicator {
-    display: none; /* Hide on mobile */
+    display: none;
+    /* Hide on mobile */
   }
 }

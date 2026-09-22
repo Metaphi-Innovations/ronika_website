@@ -24,14 +24,19 @@
 }
 
 .gallery-subtitle-text {
-  font-family: 'Jersey 15', sans-serif;
-  font-size: clamp(28px, 3.2vw, 42px);
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.5vw, 52px);
   font-weight: 400;
-  color: var(--text-main, #111111);
-  line-height: 1.15;
-  letter-spacing: 0.02em;
+  color: #111111;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   margin: 0;
   text-transform: none;
+}
+
+.font-italic {
+  font-style: italic;
+  font-family: 'Playfair Display', serif;
 }
 
 /* Filter Pills Row */
