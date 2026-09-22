@@ -84,41 +84,15 @@ export default function ShopProductDetailPage() {
               <p>{product.description}</p>
             </div>
 
-            {/* Optional Details Rendering */}
-            {product.details && (
-              <div className="shop-detail-meta">
-                {product.details.medium && (
-                  <div className="shop-meta-row">
-                    <span className="shop-meta-label">Medium</span>
-                    <span className="shop-meta-value">{product.details.medium}</span>
-                  </div>
-                )}
-                {product.details.dimensions && (
-                  <div className="shop-meta-row">
-                    <span className="shop-meta-label">Dimensions</span>
-                    <span className="shop-meta-value">{product.details.dimensions}</span>
-                  </div>
-                )}
-                {product.details.materials && (
-                  <div className="shop-meta-row">
-                    <span className="shop-meta-label">Materials</span>
-                    <span className="shop-meta-value">{product.details.materials}</span>
-                  </div>
-                )}
-                {product.details.year && (
-                  <div className="shop-meta-row">
-                    <span className="shop-meta-label">Year</span>
-                    <span className="shop-meta-value">{product.details.year}</span>
-                  </div>
-                )}
-                {product.details.availability && (
-                  <div className="shop-meta-row">
-                    <span className="shop-meta-label">Availability</span>
-                    <span className="shop-meta-value">{product.details.availability}</span>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Features Bullet Points */}
+            <div className="shop-detail-features">
+              <ul>
+                <li>High-quality archival materials</li>
+                <li>Signed and numbered by the artist</li>
+                <li>Certificate of authenticity included</li>
+                <li>Securely packaged for global shipping</li>
+              </ul>
+            </div>
 
             <button className="btn-shop-primary shop-detail-cta" onClick={handleEnquiry}>
               Shop Now
