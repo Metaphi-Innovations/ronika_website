@@ -38,7 +38,7 @@ export default function ShopProductCard({ product }: ShopProductCardProps) {
           <div className="shop-product-card-back">
             <div className="shop-product-back-content">
               <h3 className="shop-product-name">{product.name}</h3>
-              <p className="shop-product-short-desc">{product.shortDescription}</p>
+              <p className="shop-product-category">{product.category}</p>
             </div>
             
             {/* Actions (Inside flip area) */}

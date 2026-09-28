@@ -85,8 +85,7 @@ export default function GalleryPage() {
 
   const { settings } = useSite();
 
-  const fallbackHeader = 'Here\'s a compilation of my <span class="font-italic">Work</span> including <span class="font-italic">Personal</span> as well as <span class="font-italic">Client Projects.</span>';
-  const headerContent = settings?.galleryHeader || fallbackHeader;
+  const headerContent = settings?.galleryHeader || '';
   const isHeaderHtml = isHtmlString(headerContent);
   const sanitizedHeader = isHeaderHtml ? sanitizeRichText(headerContent) : headerContent;
 
@@ -125,18 +124,20 @@ export default function GalleryPage() {
         <div className="container">
 
           {/* Dynamic Header Subtitle */}
-          <div className="gallery-header-block">
-            {isHeaderHtml ? (
-              <h2
-                className="gallery-subtitle-text"
-                dangerouslySetInnerHTML={{ __html: sanitizedHeader }}
-              />
-            ) : (
-              <h2 className="gallery-subtitle-text">
-                {headerContent}
-              </h2>
-            )}
-          </div>
+          {headerContent && (
+            <div className="gallery-header-block">
+              {isHeaderHtml ? (
+                <h2
+                  className="gallery-subtitle-text"
+                  dangerouslySetInnerHTML={{ __html: sanitizedHeader }}
+                />
+              ) : (
+                <h2 className="gallery-subtitle-text">
+                  {headerContent}
+                </h2>
+              )}
+            </div>
+          )}
 
           {/* Filter Pills Row */}
           <div className="gallery-filter-pills-row">

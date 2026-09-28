@@ -41,8 +41,7 @@ export default function WorkPage() {
 
   const filteredProjects = useMemo(() => {
     if (selectedCat === 'All') return projects;
-    const matched = projects.filter((p) => p.category === selectedCat);
-    return matched.length > 0 ? matched : projects;
+    return projects.filter((p) => p.category === selectedCat);
   }, [projects, selectedCat]);
 
   return (

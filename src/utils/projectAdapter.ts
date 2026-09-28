@@ -9,7 +9,7 @@ export function adaptApiProject(apiProj: ApiProject): Project {
 
   const heroUrl = apiProj.heroImage?.url
     ? getImageUrl(apiProj.heroImage.url)
-    : (apiProj.images && apiProj.images.length > 0 ? getImageUrl(apiProj.images[0].url) : '/assets/Client/HeroImage.png');
+    : (apiProj.images && apiProj.images.length > 0 ? getImageUrl(apiProj.images[0].url) : '');
 
   const galleryImageUrls = (apiProj.images || [])
     .slice()

@@ -7,7 +7,7 @@ export function adaptApiShopProduct(apiProd: ApiShopProduct): ShopProduct {
     ? apiProd.category.name
     : (typeof apiProd.category === 'string' ? apiProd.category : 'Artwork');
 
-  const mainUrl = apiProd.mainImage?.url ? getImageUrl(apiProd.mainImage.url) : '/assets/projects/Bombayphilia/d8b75e_8c4bb68c06464764be3a23d978863346~mv2.webp';
+  const mainUrl = apiProd.mainImage?.url ? getImageUrl(apiProd.mainImage.url) : '';
 
   const galleryImages = (apiProd.images || [])
     .slice()
@@ -26,7 +26,7 @@ export function adaptApiShopProduct(apiProd: ApiShopProduct): ShopProduct {
     shortDescription: apiProd.shortDescription || '',
     description: apiProd.description || '',
     mainImage: mainUrl,
-    images: galleryImages.length > 0 ? galleryImages : [{ src: mainUrl, alt: apiProd.name }],
+    images: galleryImages.length > 0 ? galleryImages : (mainUrl ? [{ src: mainUrl, alt: apiProd.name }] : []),
     details: apiProd.details,
     displayOrder: apiProd.displayOrder || 0,
     published: apiProd.published !== undefined ? apiProd.published : true,

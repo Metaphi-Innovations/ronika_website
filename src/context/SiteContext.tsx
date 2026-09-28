@@ -24,6 +24,15 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .then((data) => {
         if (isMounted) {
           setSettings(data);
+          if (data.siteTitle) {
+            document.title = data.siteTitle;
+          }
+          if (data.metaDescription) {
+            const metaTag = document.querySelector('meta[name="description"]');
+            if (metaTag) {
+              metaTag.setAttribute('content', data.metaDescription);
+            }
+          }
           setLoading(false);
         }
       })

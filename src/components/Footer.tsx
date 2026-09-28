@@ -69,20 +69,23 @@ export default function Footer() {
         {/* Contact Block */}
         <div className="footer-contact-block">
           <h3 className="footer-contact-title font-36">Contact</h3>
-          <div className="footer-social-pills">
-            {socialLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.url}
-                target={link.isExternal ? '_blank' : undefined}
-                rel={link.isExternal ? 'noreferrer' : undefined}
-                className="footer-pill-btn"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
+          {socialLinks.length > 0 && (
+            <div className="footer-social-pills">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.url}
+                  target={link.isExternal ? '_blank' : undefined}
+                  rel={link.isExternal ? 'noreferrer' : undefined}
+                  className="footer-pill-btn"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
+
 
       </div>
     </footer>

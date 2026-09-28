@@ -19,11 +19,11 @@ export default function ContactPage() {
     return () => { isMounted = false; };
   }, []);
 
-  const headline = content?.heading || "Let's Create Together";
-  const email = content?.email || 'ronikabhatia@gmail.com';
-  const description = content?.description || 'Open for brand identity commissions, publication design, and visual consultations.';
-  const instagram = content?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
-  const linkedin = content?.socialLinks?.linkedin || 'https://linkedin.com/in/ronikabhatia';
+  const headline = content?.heading;
+  const email = content?.email;
+  const description = content?.description;
+  const instagram = content?.socialLinks?.instagram;
+  const linkedin = content?.socialLinks?.linkedin;
 
   return (
     <main className="psycolops-contact-page animate-fade-in">
@@ -31,7 +31,7 @@ export default function ContactPage() {
         <div className="container contact-container">
 
           {/* Paper Airplane Motif Image */}
-          <div className="paper-plane-wrapper" title="Ronika Bhatia Contact">
+          <div className="paper-plane-wrapper" title="Contact">
             <img 
               src="/assets/AboutMe/paper-plane-transparent.png" 
               alt="Paper Plane" 
@@ -39,38 +39,50 @@ export default function ContactPage() {
             />
           </div>
 
-          <h1 className="heading-1 contact-headline">
-            {headline}
-          </h1>
+          {headline && (
+            <h1 className="heading-1 contact-headline">
+              {headline}
+            </h1>
+          )}
           
           {/* Direct Email CTA */}
-          <div className="contact-info-block">
-            <a href={`mailto:${email}`} className="huge-contact-link link-underline">
-              {email} <ArrowUpRight size={28} style={{display:'inline', verticalAlign: 'middle'}}/>
-            </a>
+          {(email || description) && (
+            <div className="contact-info-block">
+              {email && (
+                <a href={`mailto:${email}`} className="huge-contact-link link-underline">
+                  {email} <ArrowUpRight size={28} style={{display:'inline', verticalAlign: 'middle'}}/>
+                </a>
+              )}
 
-            {/* Client's Original Welcoming Message */}
-            <p className="contact-welcome-text">
-              {description}
-            </p>
-          </div>
+              {/* Client's Welcoming Message */}
+              {description && (
+                <p className="contact-welcome-text">
+                  {description}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Social Row */}
-          <div className="contact-social-row">
-            {instagram && (
-              <a href={instagram} target="_blank" rel="noreferrer" className="social-link">
-                <Instagram size={18} /> Instagram
-              </a>
-            )}
-            {linkedin && (
-              <a href={linkedin} target="_blank" rel="noreferrer" className="social-link">
-                <Linkedin size={18} /> LinkedIn
-              </a>
-            )}
-            <a href={`mailto:${email}`} className="social-link">
-              <Mail size={18} /> Gmail
-            </a>
-          </div>
+          {(instagram || linkedin || email) && (
+            <div className="contact-social-row">
+              {instagram && (
+                <a href={instagram} target="_blank" rel="noreferrer" className="social-link">
+                  <Instagram size={18} /> Instagram
+                </a>
+              )}
+              {linkedin && (
+                <a href={linkedin} target="_blank" rel="noreferrer" className="social-link">
+                  <Linkedin size={18} /> LinkedIn
+                </a>
+              )}
+              {email && (
+                <a href={`mailto:${email}`} className="social-link">
+                  <Mail size={18} /> Gmail
+                </a>
+              )}
+            </div>
+          )}
 
         </div>
       </section>

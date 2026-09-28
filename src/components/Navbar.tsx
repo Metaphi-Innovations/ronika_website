@@ -13,8 +13,8 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { settings } = useSite();
 
-  const email = settings?.contactEmail || 'ronikbhatia@gmail.com';
-  const instagram = settings?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
+  const email = settings?.contactEmail;
+  const instagram = settings?.socialLinks?.instagram;
 
   const navItems: NavItem[] = [
     { label: 'ABOUT', path: '/about' },
@@ -99,7 +99,9 @@ export default function Navbar() {
           <div className="mobile-drawer-footer">
             <p className="mobile-drawer-tagline">Visual Designer &amp; Illustrator</p>
             <div className="mobile-drawer-pills">
-              <a href={`mailto:${email}`} className="mobile-drawer-pill">Gmail</a>
+              {email && (
+                <a href={`mailto:${email}`} className="mobile-drawer-pill">Gmail</a>
+              )}
               {instagram && (
                 <a href={instagram} target="_blank" rel="noreferrer" className="mobile-drawer-pill">Instagram</a>
               )}

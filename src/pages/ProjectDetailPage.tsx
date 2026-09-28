@@ -112,28 +112,38 @@ export default function ProjectDetailPage() {
         <div className="container">
           <div className="narrative-grid">
             <div className="narrative-meta">
-              <div className="meta-item">
-                <span className="meta-label">CLIENT</span>
-                <p className="meta-value">{project.metadata?.client || 'Independent Project'}</p>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">SERVICES / DELIVERABLES</span>
-                <p className="meta-value">{project.tags && project.tags.length > 0 ? project.tags.join(', ') : project.category}</p>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">ROLE</span>
-                <p className="meta-value">{project.role || 'Visual Designer'}</p>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">YEAR</span>
-                <p className="meta-value">{project.year || '2026'}</p>
-              </div>
+              {project.metadata?.client && (
+                <div className="meta-item">
+                  <span className="meta-label">CLIENT</span>
+                  <p className="meta-value">{project.metadata.client}</p>
+                </div>
+              )}
+              {((project.tags && project.tags.length > 0) || project.category) && (
+                <div className="meta-item">
+                  <span className="meta-label">SERVICES / DELIVERABLES</span>
+                  <p className="meta-value">{project.tags && project.tags.length > 0 ? project.tags.join(', ') : project.category}</p>
+                </div>
+              )}
+              {project.role && (
+                <div className="meta-item">
+                  <span className="meta-label">ROLE</span>
+                  <p className="meta-value">{project.role}</p>
+                </div>
+              )}
+              {project.year && (
+                <div className="meta-item">
+                  <span className="meta-label">YEAR</span>
+                  <p className="meta-value">{project.year}</p>
+                </div>
+              )}
             </div>
             
-            <div className="narrative-text">
-              <h3 className="brief-heading">Brief:</h3>
-              <p className="brief-paragraph">{project.description}</p>
-            </div>
+            {project.description && (
+              <div className="narrative-text">
+                <h3 className="brief-heading">Brief:</h3>
+                <p className="brief-paragraph">{project.description}</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -160,8 +170,14 @@ export default function ProjectDetailPage() {
                     key={rowIndex} 
                     className={`gallery-layout-row ${rowTypeClass}`}
                   >
-                    {row.map((item) => (
-                      <div key={item.originalIndex} className="gallery-image-item">
+                    {row.map(({ item, position, ratio }) => (
+                      <div 
+                        key={item.originalIndex} 
+                        className={`gallery-image-item ratio-${ratio.replace(':', '-')}`}
+                        style={{
+                          aspectRatio: ratio === '16:9' ? '16 / 9' : ratio === '4:3' ? '4 / 3' : '1 / 1'
+                        }}
+                      >
                         <div className="gallery-visual-frame">
                           <img 
                             src={item.src} 

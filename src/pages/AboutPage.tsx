@@ -27,7 +27,7 @@ export default function AboutPage() {
     return () => { isMounted = false; };
   }, []);
 
-  const headingText = content?.heading || 'About Ronika Bhatia';
+  const headingText = content?.heading || '';
   const isHeadingHtml = isHtmlString(headingText);
   const sanitizedHeading = isHeadingHtml ? sanitizeRichText(headingText) : headingText;
 
@@ -61,15 +61,17 @@ export default function AboutPage() {
           {/* LEFT: TEXT CONTENT (STARTS DIRECTLY FROM HEADER SECTION) */}
           <div className="about-text-column">
             
-            {isHeadingHtml ? (
-              <h1 
-                className="about-main-heading"
-                dangerouslySetInnerHTML={{ __html: sanitizedHeading }}
-              />
-            ) : (
-              <h1 className="about-main-heading">
-                {headingText}
-              </h1>
+            {headingText && (
+              isHeadingHtml ? (
+                <h1 
+                  className="about-main-heading"
+                  dangerouslySetInnerHTML={{ __html: sanitizedHeading }}
+                />
+              ) : (
+                <h1 className="about-main-heading">
+                  {headingText}
+                </h1>
+              )
             )}
             
             <div className="about-body-text">
@@ -90,20 +92,24 @@ export default function AboutPage() {
               >
                 Services &rarr;
               </a>
-              <Link to="/contact" className="about-btn-solid">
-                {content?.ctaText || 'Get In Touch'} &rarr;
-              </Link>
+              {content?.ctaText && (
+                <Link to={content?.ctaLink || "/contact"} className="about-btn-solid">
+                  {content.ctaText} &rarr;
+                </Link>
+              )}
             </div>
 
           </div>
 
           {/* RIGHT: ILLUSTRATION */}
           <div className="about-visual-column">
-            <img 
-              src={headshotSrc} 
-              alt="Ronika Bhatia" 
-              className="about-illustration"
-            />
+            {headshotSrc && (
+              <img 
+                src={headshotSrc} 
+                alt="About" 
+                className="about-illustration"
+              />
+            )}
           </div>
 
         </div>
