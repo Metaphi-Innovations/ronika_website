@@ -1,17 +1,47 @@
-import React, { useState } from 'react';
-import { SHOP_CATEGORIES, SHOP_PRODUCTS } from '../data/shop';
+import React, { useEffect, useState, useMemo } from 'react';
+import { getShopCategories, getShopProducts, ApiShopCategory, ApiShopProduct } from '../api/shopApi';
+import { adaptApiShopProduct } from '../utils/shopAdapter';
+import type { ShopProduct } from '../types/shop';
 import ShopProductCard from '../components/ShopProductCard';
 import './ShopPage.css';
 
 export default function ShopPage() {
+  const [categories, setCategories] = useState<ApiShopCategory[]>([]);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const categories = ["ALL", ...SHOP_CATEGORIES.map(c => c.name)];
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([getShopCategories(), getShopProducts()])
+      .then(([apiCats, apiProds]) => {
+        if (!isMounted) return;
+        setCategories(apiCats);
+        setProducts(apiProds.map(adaptApiShopProduct));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load shop data from API:', err);
+        if (isMounted) setLoading(false);
+      });
 
-  const filteredProducts = SHOP_PRODUCTS
-    .filter(p => p.published)
-    .filter(p => activeCategory === "ALL" || p.category === activeCategory)
-    .sort((a, b) => a.displayOrder - b.displayOrder);
+    return () => { isMounted = false; };
+  }, []);
+
+  const categoryPills = useMemo(() => {
+    const list = ["ALL"];
+    if (categories && categories.length > 0) {
+      categories.forEach(c => list.push(c.name));
+    }
+    return list;
+  }, [categories]);
+
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter(p => p.published)
+      .filter(p => activeCategory === "ALL" || p.category.toUpperCase() === activeCategory.toUpperCase())
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }, [products, activeCategory]);
 
   return (
     <main className="shop-page animate-fade-in">
@@ -27,7 +57,7 @@ export default function ShopPage() {
 
         {/* Horizontal Category Filters */}
         <div className="shop-filter-pills-row">
-          {categories.map((cat) => (
+          {categoryPills.map((cat) => (
             <button
               key={cat}
               className={`shop-filter-pill ${activeCategory === cat ? 'active' : ''}`}
@@ -39,11 +69,17 @@ export default function ShopPage() {
         </div>
 
         {/* Single Product Grid */}
-        <div className="shop-product-grid">
-          {filteredProducts.map(product => (
-            <ShopProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>Loading shop items...</div>
+        ) : filteredProducts.length === 0 ? (
+          <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>No products found in this category.</div>
+        ) : (
+          <div className="shop-product-grid">
+            {filteredProducts.map(product => (
+              <ShopProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
       </div>
     </main>

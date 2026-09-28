@@ -98,6 +98,15 @@ button {
   cursor: pointer;
 }
 
+/* Editorial High-Contrast Serif Italic across the website */
+em,
+i,
+.font-italic,
+.font-serif-italic {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-style: italic !important;
+}
+
 /* Single Global Container System */
 .container {
   width: 100%;

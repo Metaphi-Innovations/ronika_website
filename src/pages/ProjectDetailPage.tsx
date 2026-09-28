@@ -1,21 +1,60 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProjectBySlug, PROJECTS } from '../data/projects.ts';
+import { getProjectBySlug, getProjects, ApiProject } from '../api/projectsApi';
+import { adaptApiProject } from '../utils/projectAdapter';
+import type { Project } from '../types/portfolio';
 import ProjectCarousel from '../components/ProjectCarousel';
-import './ProjectDetailPage.css';
 import { generateProjectImageRows } from '../utils/imageLayout';
+import './ProjectDetailPage.css';
 
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const project = slug ? getProjectBySlug(slug) : undefined;
+  const [project, setProject] = useState<Project | null>(null);
+  const [otherProjects, setOtherProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    if (!slug) return;
+
+    let isMounted = true;
+    setLoading(true);
+
+    Promise.all([getProjectBySlug(slug), getProjects()])
+      .then(([apiProj, allProjects]) => {
+        if (!isMounted) return;
+        const adapted = adaptApiProject(apiProj);
+        setProject(adapted);
+        
+        const adaptedOthers = allProjects
+          .filter(p => p.slug !== slug)
+          .map(adaptApiProject);
+        setOtherProjects(adaptedOthers);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load project details:', err);
+        if (isMounted) {
+          setError('Project not found');
+          setLoading(false);
+        }
+      });
+
+    return () => { isMounted = false; };
   }, [slug]);
 
-  if (!project) {
+  if (loading) {
     return (
-      <div className="container section text-center" style={{ paddingTop: '4rem' }}>
+      <div className="container section text-center" style={{ paddingTop: '6rem', paddingBottom: '6rem', opacity: 0.6 }}>
+        <p>Loading project details...</p>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="container section text-center" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>
         <h1 className="heading-2">Project Not Found</h1>
         <Link to="/work" className="btn-editorial" style={{ marginTop: '1.5rem' }}>
           Back to Work Index
@@ -33,8 +72,6 @@ export default function ProjectDetailPage() {
   // Dynamic row distribution calculated via generateProjectImageRows algorithm
   const imageRows = generateProjectImageRows(galleryItems);
 
-  const otherProjects = PROJECTS.filter(p => p.slug !== slug);
-
   return (
     <article className="psycolops-project-detail animate-fade-in">
       {/* 1. Header & Title Section */}
@@ -42,15 +79,19 @@ export default function ProjectDetailPage() {
         <div className="container">
           <div className="detail-header-block">
             <div className="detail-category-tag">
-              <span>{project.category.toUpperCase()}</span>
+              <span>{typeof project.category === 'string' ? project.category.toUpperCase() : ''}</span>
               {project.tags && project.tags[0] && (
                 <>
                   <span className="divider-bar">|</span>
                   <span>{project.tags[0].toUpperCase()}</span>
                 </>
               )}
-              <span className="divider-bar">|</span>
-              <span>{project.year}</span>
+              {project.year && (
+                <>
+                  <span className="divider-bar">|</span>
+                  <span>{project.year}</span>
+                </>
+              )}
             </div>
             
             <h1 className="detail-title">{project.title}</h1>
@@ -73,11 +114,11 @@ export default function ProjectDetailPage() {
             <div className="narrative-meta">
               <div className="meta-item">
                 <span className="meta-label">CLIENT</span>
-                <p className="meta-value">{project.client || 'Independent Project'}</p>
+                <p className="meta-value">{project.metadata?.client || 'Independent Project'}</p>
               </div>
               <div className="meta-item">
                 <span className="meta-label">SERVICES / DELIVERABLES</span>
-                <p className="meta-value">{project.tags ? project.tags.join(', ') : project.category}</p>
+                <p className="meta-value">{project.tags && project.tags.length > 0 ? project.tags.join(', ') : project.category}</p>
               </div>
               <div className="meta-item">
                 <span className="meta-label">ROLE</span>
@@ -85,7 +126,7 @@ export default function ProjectDetailPage() {
               </div>
               <div className="meta-item">
                 <span className="meta-label">YEAR</span>
-                <p className="meta-value">{project.year}</p>
+                <p className="meta-value">{project.year || '2026'}</p>
               </div>
             </div>
             
@@ -140,7 +181,9 @@ export default function ProjectDetailPage() {
       )}
 
       {/* 5. "See More Work" Section (Carousel) */}
-      <ProjectCarousel projects={otherProjects} title="Selected Projects & Visual Explorations:" />
+      {otherProjects.length > 0 && (
+        <ProjectCarousel projects={otherProjects} title="Selected Projects & Visual Explorations:" />
+      )}
     </article>
   );
 }

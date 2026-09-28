@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowUpRight, Instagram, Linkedin, Mail } from 'lucide-react';
+import { getContactContent, ContactContentData } from '../api/contentApi';
 import './ContactPage.css';
 
 export default function ContactPage() {
+  const [content, setContent] = useState<ContactContentData | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getContactContent()
+      .then((data) => {
+        if (isMounted) setContent(data);
+      })
+      .catch((err) => {
+        console.warn('Failed to load Contact content from API:', err);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const headline = content?.heading || "Let's Create Together";
+  const email = content?.email || 'ronikabhatia@gmail.com';
+  const description = content?.description || 'Open for brand identity commissions, publication design, and visual consultations.';
+  const instagram = content?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
+  const linkedin = content?.socialLinks?.linkedin || 'https://linkedin.com/in/ronikabhatia';
+
   return (
     <main className="psycolops-contact-page animate-fade-in">
       <section className="contact-hero section">
@@ -18,38 +40,34 @@ export default function ContactPage() {
           </div>
 
           <h1 className="heading-1 contact-headline">
-            Let's work together.
+            {headline}
           </h1>
           
           {/* Direct Email CTA */}
           <div className="contact-info-block">
-            <a href="mailto:ronikbhatia@gmail.com" className="huge-contact-link link-underline">
-              ronikbhatia@gmail.com <ArrowUpRight size={28} style={{display:'inline', verticalAlign: 'middle'}}/>
+            <a href={`mailto:${email}`} className="huge-contact-link link-underline">
+              {email} <ArrowUpRight size={28} style={{display:'inline', verticalAlign: 'middle'}}/>
             </a>
-
-            {/* Handle Bar */}
-            <div className="contact-handles-meta">
-              <span>E-mail: <strong>ronikbhatia@gmail.com</strong></span>
-              <span className="handle-divider">|</span>
-              <span>Instagram: <strong>@ronika2304</strong></span>
-            </div>
 
             {/* Client's Original Welcoming Message */}
             <p className="contact-welcome-text">
-              If you have any questions, enquiries, or would like to discuss a potential collaboration, 
-              please feel free to reach out. I look forward to connecting with you!
+              {description}
             </p>
           </div>
 
           {/* Social Row */}
           <div className="contact-social-row">
-            <a href="https://instagram.com/ronika2304" target="_blank" rel="noreferrer" className="social-link">
-              <Instagram size={18} /> Instagram (@ronika2304)
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-link">
-              <Linkedin size={18} /> LinkedIn
-            </a>
-            <a href="mailto:ronikbhatia@gmail.com" className="social-link">
+            {instagram && (
+              <a href={instagram} target="_blank" rel="noreferrer" className="social-link">
+                <Instagram size={18} /> Instagram
+              </a>
+            )}
+            {linkedin && (
+              <a href={linkedin} target="_blank" rel="noreferrer" className="social-link">
+                <Linkedin size={18} /> LinkedIn
+              </a>
+            )}
+            <a href={`mailto:${email}`} className="social-link">
               <Mail size={18} /> Gmail
             </a>
           </div>

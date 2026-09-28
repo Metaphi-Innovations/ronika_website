@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import './LightboxModal.css';
 
@@ -74,7 +75,7 @@ export default function LightboxModal({
     setIsZoomed(!isZoomed);
   };
 
-  return (
+  return createPortal(
     <div className="lightbox-overlay" onClick={onClose}>
       {/* Lightbox Top Control Bar */}
       <div className="lightbox-top-bar" onClick={(e) => e.stopPropagation()}>
@@ -121,6 +122,7 @@ export default function LightboxModal({
           <span className="lightbox-caption">{caption}</span>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

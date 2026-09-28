@@ -11,6 +11,49 @@
   padding: 0 140px;
 }
 
+.shop-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: opacity 0.2s ease;
+}
+
+.shop-back-btn:hover {
+  opacity: 0.7;
+}
+
+.shop-enquiry-header-block {
+  margin-bottom: 24px;
+}
+
+.shop-enquiry-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.shop-enquiry-subheading {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
 .shop-enquiry-layout {
   display: flex;
   gap: 40px;
@@ -19,32 +62,15 @@
 
 /* Left: Product Context */
 .shop-enquiry-context {
-  flex: 1;
-  max-width: 480px;
-}
-
-.shop-enquiry-heading {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 3vw, 2.75rem);
-  font-weight: 600;
-  color: var(--text-main);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em;
-}
-
-.shop-enquiry-subheading {
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin-bottom: 24px;
+  flex: 0 0 380px;
+  max-width: 380px;
 }
 
 .shop-enquiry-product-card {
   border-radius: 2px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
 }
 
 .enquiry-product-image-wrap {
@@ -53,13 +79,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--bg-subtle, #f5f5f5);
+  border: 1px solid var(--border-color, #E2E0D8);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .enquiry-product-image-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.05));
+  display: block;
 }
 
 .enquiry-product-details {
@@ -69,31 +99,32 @@
 
 .enquiry-product-category {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .enquiry-product-name {
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
+  color: var(--text-main);
 }
 
 .enquiry-product-desc {
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 /* Right: Form Section */
 .shop-enquiry-form-section {
-  flex: 1.5;
+  flex: 1;
   background-color: #ffffff;
   border: 1px solid var(--border-color, #E2E0D8);
   padding: 32px;
@@ -103,16 +134,17 @@
 .shop-enquiry-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 14px;
 }
 
 .form-row .form-group {
   flex: 1;
+  min-width: 0;
 }
 
 .form-group {
@@ -123,7 +155,7 @@
 
 .form-group label {
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-main);
   text-transform: uppercase;
@@ -132,34 +164,50 @@
 
 .form-input {
   font-family: var(--font-body);
-  font-size: 1rem;
-  padding: 16px;
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  height: 38px;
   border: 1px solid var(--border-color, #E2E0D8);
   border-radius: 2px;
   background-color: transparent;
   color: var(--text-main);
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--text-main);
+  box-shadow: 0 0 0 1px var(--text-main);
 }
 
 .disabled-input {
-  background-color: var(--bg-subtle, #f5f5f5);
+  background-color: #f6f6f5;
   color: var(--text-muted);
   cursor: not-allowed;
+  border-color: #e5e3dd;
 }
 
 .form-textarea {
+  height: auto;
+  min-height: 72px;
   resize: vertical;
-  min-height: 120px;
+  padding: 8px 12px;
+  line-height: 1.45;
 }
 
 .btn-submit-enquiry {
-  margin-top: 16px;
-  padding: 18px 24px;
+  margin-top: 6px;
+  padding: 10px 24px;
+  height: 40px;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: 2px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.2s ease;
 }
 
 /* Success State */
@@ -170,49 +218,48 @@
   justify-content: center;
   text-align: center;
   padding: 40px 20px;
-  min-height: 400px;
+  min-height: 320px;
 }
 
 .success-icon {
   color: #10B981;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .shop-enquiry-success h3 {
   font-family: var(--font-display);
-  font-size: 2rem;
-  margin: 0 0 16px 0;
+  font-size: 1.6rem;
+  margin: 0 0 10px 0;
 }
 
 .shop-enquiry-success p {
   font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: var(--text-muted);
-  max-width: 400px;
+  max-width: 380px;
 }
 
 .mt-4 {
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .shop-enquiry-layout {
     flex-direction: column;
-    gap: 60px;
+    gap: 36px;
   }
 
   .shop-enquiry-context,
   .shop-enquiry-form-section {
     max-width: 100%;
     width: 100%;
+    flex: unset;
   }
-}
 
-@media (max-width: 1023px) {
-  .shop-enquiry-page .shop-enquiry-container {
-    padding: 0 40px;
+  .enquiry-product-image-wrap {
+    max-width: 360px;
   }
 }
 
@@ -222,11 +269,15 @@
   }
   
   .shop-enquiry-form-section {
-    padding: 32px 24px;
+    padding: 20px 16px;
   }
 
   .form-row {
     flex-direction: column;
-    gap: 24px;
+    gap: 12px;
+  }
+
+  .btn-submit-enquiry {
+    width: 100%;
   }
 }

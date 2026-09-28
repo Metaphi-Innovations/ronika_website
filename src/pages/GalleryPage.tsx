@@ -1,110 +1,223 @@
-import React, { useState } from 'react';
-import { PROJECTS } from '../data/projects.ts';
+import React, { useEffect, useState, useMemo } from 'react';
+import { getGalleryCategories, getGalleryImages, GalleryCategoryData, GalleryImageData } from '../api/galleryApi';
+import { getProjects, ApiProject } from '../api/projectsApi';
+import { getImageUrl } from '../utils/imageUrl';
+import { useSite } from '../context/SiteContext';
+import { isHtmlString, sanitizeRichText } from '../utils/richText';
+import LightboxModal from '../components/LightboxModal';
 import './GalleryPage.css';
 
 export interface GalleryDisplayItem {
+  id: string;
   src: string;
   caption: string;
   projectTitle: string;
-  category: string;
-  tags: string[];
-  globalIndex: number;
+  categoryName: string;
+  categoryId?: string;
+  projectSlug?: string;
 }
 
-const GALLERY_CATEGORIES = [
-  "ALL",
-  "BRANDING",
-  "MOTION",
-  "SKETCHBOOKS",
-  "TYPOGRAPHY",
-  "ILLUSTRATION"
-];
-
 export default function GalleryPage() {
+  const [categories, setCategories] = useState<GalleryCategoryData[]>([]);
+  const [images, setImages] = useState<GalleryImageData[]>([]);
+  const [fallbackItems, setFallbackItems] = useState<GalleryDisplayItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Flatten all available images from all projects
-  const allGalleryItems: GalleryDisplayItem[] = PROJECTS.flatMap(project => {
-    const images = project.images;
-    return (images || []).map((img, idx) => ({
-      src: img,
-      caption: `${project.title} — Visual Output ${String(idx + 1).padStart(2, '0')}`,
-      projectTitle: project.title,
-      category: project.category,
-      tags: project.tags || [],
-      globalIndex: 0
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([getGalleryCategories(), getGalleryImages(), getProjects()])
+      .then(([cats, imgs, projs]) => {
+        if (!isMounted) return;
+        setCategories(cats);
+        setImages(imgs);
+
+        // Fallback from projects if gallery images collection is empty
+        const projItems: GalleryDisplayItem[] = projs.flatMap(project => {
+          const catName = typeof project.category === 'object' && project.category ? project.category.name : 'Work';
+          return (project.images || []).map((img, idx) => ({
+            id: img._id || `${project._id}-${idx}`,
+            src: getImageUrl(img.url),
+            caption: `${project.title} — Visual Output ${String(idx + 1).padStart(2, '0')}`,
+            projectTitle: project.title,
+            categoryName: catName,
+            projectSlug: project.slug,
+          }));
+        });
+
+        setFallbackItems(projItems);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load gallery data from CMS:', err);
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayItems: GalleryDisplayItem[] = useMemo(() => {
+    if (images && images.length > 0) {
+      const sorted = [...images].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+      return sorted.map((img) => {
+        const catObj = typeof img.category === 'object' && img.category ? img.category : null;
+        const catName = catObj ? catObj.name : 'Gallery';
+        const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
+        return {
+          id: img._id,
+          src: getImageUrl(img.image?.url),
+          caption: img.title || img.caption || 'Artwork',
+          projectTitle: img.title || 'Artwork',
+          categoryName: catName,
+          categoryId: catId,
+          projectSlug: img.projectSlug,
+        };
+      });
+    }
+    return fallbackItems;
+  }, [images, fallbackItems]);
+
+  const filteredItems = useMemo(() => {
+    if (activeCategory === "ALL") return displayItems;
+    return displayItems.filter(item => {
+      if (item.categoryId && item.categoryId === activeCategory) return true;
+      return item.categoryName.toUpperCase() === activeCategory.toUpperCase();
+    });
+  }, [displayItems, activeCategory]);
+
+  const categoryPills = useMemo(() => {
+    const list = [{ id: 'ALL', name: 'ALL' }];
+    if (categories && categories.length > 0) {
+      categories.forEach(c => list.push({ id: c._id, name: c.name.toUpperCase() }));
+    } else {
+      ['BRANDING', 'MOTION', 'SKETCHBOOKS', 'TYPOGRAPHY', 'ILLUSTRATION'].forEach(name => {
+        list.push({ id: name, name });
+      });
+    }
+    return list;
+  }, [categories]);
+
+  const lightboxImages = useMemo(() => {
+    return filteredItems.map(item => ({
+      src: item.src,
+      title: item.caption,
+      projectSlug: item.projectSlug
     }));
-  }).map((item, idx) => ({ ...item, globalIndex: idx }));
+  }, [filteredItems]);
 
-  const filteredItems = allGalleryItems.filter(item => {
-    if (activeCategory === "ALL") return true;
-    const categoryUpper = item.category.toUpperCase();
-    const titleUpper = item.projectTitle.toUpperCase();
-    const tagUpper = item.tags.map(t => t.toUpperCase());
-    const filterUpper = activeCategory.toUpperCase();
+  const { settings } = useSite();
 
-    if (filterUpper === "BRANDING") {
-      return categoryUpper.includes("BRAND") || titleUpper.includes("BRAND") || tagUpper.some(t => t.includes("BRAND"));
-    }
-    if (filterUpper === "MOTION") {
-      return categoryUpper.includes("SHOOT") || categoryUpper.includes("MOTION") || titleUpper.includes("SHOOT") || tagUpper.some(t => t.includes("MOTION") || t.includes("VIDEO") || t.includes("PHOTOGRAPHY"));
-    }
-    if (filterUpper === "SKETCHBOOKS") {
-      return categoryUpper.includes("SKETCH") || titleUpper.includes("SKETCH") || tagUpper.some(t => t.includes("SKETCH") || t.includes("DRAWING"));
-    }
-    if (filterUpper === "TYPOGRAPHY") {
-      return categoryUpper.includes("TYPE") || categoryUpper.includes("POSTER") || categoryUpper.includes("PUBLICATION") || titleUpper.includes("TEXT") || tagUpper.some(t => t.includes("TYPE") || t.includes("POSTER"));
-    }
-    if (filterUpper === "ILLUSTRATION") {
-      return categoryUpper.includes("ILLUSTRAT") || titleUpper.includes("ILLUSTRAT") || tagUpper.some(t => t.includes("ILLUSTRAT") || t.includes("VECTOR"));
-    }
+  const fallbackHeader = 'Here\'s a compilation of my <span class="font-italic">Work</span> including <span class="font-italic">Personal</span> as well as <span class="font-italic">Client Projects.</span>';
+  const headerContent = settings?.galleryHeader || fallbackHeader;
+  const isHeaderHtml = isHtmlString(headerContent);
+  const sanitizedHeader = isHeaderHtml ? sanitizeRichText(headerContent) : headerContent;
 
-    return categoryUpper.includes(filterUpper) || titleUpper.includes(filterUpper) || tagUpper.some(t => t.includes(filterUpper));
-  });
+  // Responsive Column Count (Desktop: 3, Tablet: 2, Mobile: 1)
+  const [columnCount, setColumnCount] = useState<number>(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 600) {
+        setColumnCount(1);
+      } else if (window.innerWidth <= 1024) {
+        setColumnCount(2);
+      } else {
+        setColumnCount(3);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const masonryColumns = useMemo(() => {
+    const cols: Array<Array<{ item: GalleryDisplayItem; globalIndex: number }>> = Array.from(
+      { length: columnCount },
+      () => []
+    );
+    filteredItems.forEach((item, globalIndex) => {
+      cols[globalIndex % columnCount].push({ item, globalIndex });
+    });
+    return cols;
+  }, [filteredItems, columnCount]);
 
   return (
     <main className="psycolops-gallery-page animate-fade-in">
       <section className="psycolops-gallery-section">
         <div className="container">
 
-          {/* Header Subtitle */}
+          {/* Dynamic Header Subtitle */}
           <div className="gallery-header-block">
-            <h2 className="gallery-subtitle-text">
-              Here's a compilation of my <span className="font-italic">Work</span> including <span className="font-italic">Personal</span> as well as <span className="font-italic">Client Projects.</span>
-            </h2>
+            {isHeaderHtml ? (
+              <h2
+                className="gallery-subtitle-text"
+                dangerouslySetInnerHTML={{ __html: sanitizedHeader }}
+              />
+            ) : (
+              <h2 className="gallery-subtitle-text">
+                {headerContent}
+              </h2>
+            )}
           </div>
 
           {/* Filter Pills Row */}
           <div className="gallery-filter-pills-row">
-            {GALLERY_CATEGORIES.map((cat) => (
+            {categoryPills.map((cat) => (
               <button
-                key={cat}
-                className={`gallery-filter-pill ${activeCategory === cat ? 'active' : ''}`}
-                onClick={() => setActiveCategory(cat)}
+                key={cat.id}
+                className={`gallery-filter-pill ${activeCategory === cat.id || activeCategory === cat.name ? 'active' : ''}`}
+                onClick={() => setActiveCategory(cat.id)}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
           </div>
 
-          {/* 3-Column Masonry Exhibition Wall */}
-          <div className="psycolops-gallery-wall">
-            {filteredItems.map((item) => (
-              <div key={item.globalIndex} className="gallery-wall-card">
-                <div className="gallery-card-frame">
-                  <img
-                    src={item.src}
-                    alt={item.caption}
-                    loading="lazy"
-                    className="gallery-card-img"
-                  />
+          {/* 3-Column Masonry Exhibition Wall (1 2 3, 4 5 6, 7 8 9... Left to Right) */}
+          {loading ? (
+            <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>Loading gallery...</div>
+          ) : filteredItems.length === 0 ? (
+            <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>No images found in this category.</div>
+          ) : (
+            <div className="psycolops-gallery-wall">
+              {masonryColumns.map((colGroup, colIdx) => (
+                <div key={colIdx} className="gallery-masonry-column">
+                  {colGroup.map(({ item, globalIndex }) => (
+                    <div
+                      key={item.id}
+                      className="gallery-wall-card"
+                      onClick={() => setLightboxIndex(globalIndex)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className="gallery-card-frame">
+                        <img
+                          src={item.src}
+                          alt={item.caption}
+                          loading="lazy"
+                          className="gallery-card-img"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
         </div>
       </section>
+
+      {/* Lightbox Modal */}
+      {lightboxIndex !== null && (
+        <LightboxModal
+          isOpen={lightboxIndex !== null}
+          currentIndex={lightboxIndex}
+          images={lightboxImages}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={(newIndex) => setLightboxIndex(newIndex)}
+        />
+      )}
     </main>
   );
 }

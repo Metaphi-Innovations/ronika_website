@@ -2,27 +2,30 @@
    Ronika Bhatia Portfolio — Minimal Editorial About Page
    ========================================================================== */
 
+.about-page {
+  margin: 0;
+  padding: 0;
+}
+
 .about-editorial-page {
   width: 100%;
   background-color: #FAFAF8;
   /* Match reference off-white */
   color: #111111;
-  height: calc(100vh - 60px);
+  min-height: calc(100vh - 60px);
   display: flex;
-  align-items: center;
-  /* Center content to fit exactly in one screen */
-  padding-top: 40px;
-  /* Guaranteed minimum gap below navbar */
+  align-items: flex-start;
+  /* Flush to top, zero extra space above header */
+  padding-top: 0 !important;
   padding-bottom: 40px;
   box-sizing: border-box;
-  overflow: hidden;
-  /* Ensure it stays within viewport on desktop */
 }
 
 .about-editorial-page .about-container {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
+  padding-top: 0 !important;
   padding-left: clamp(40px, 7vw, 120px);
   padding-right: clamp(40px, 7vw, 120px);
   box-sizing: border-box;
@@ -35,8 +38,10 @@
   display: grid;
   /* 50-52% / 48-50% desktop split */
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  align-items: center;
+  align-items: flex-start;
   gap: clamp(40px, 4vw, 80px);
+  margin-top: 0;
+  padding-top: 0;
 }
 
 /* -----------------------------------------
@@ -46,9 +51,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   max-width: 700px;
   position: relative;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 /* Top Label */
@@ -82,9 +89,27 @@
   margin: 0 0 32px 0;
 }
 
+.about-main-heading p {
+  margin: 0;
+  display: inline;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+/* High-contrast Playfair Display Serif Italic matching editorial style */
+.about-main-heading em,
+.about-main-heading i,
+.about-main-heading .font-italic,
+.about-body-text em,
+.about-body-text i,
+.about-editorial-page em,
+.about-editorial-page i,
 .font-italic {
-  font-style: italic;
-  font-family: 'Playfair Display', serif;
+  font-style: italic !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
 }
 
 /* Body Text */
@@ -103,13 +128,69 @@
   font-weight: 300;
 }
 
-/* CTA */
+/* CTA Buttons matching exact reference */
 .about-cta-group {
   display: flex;
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
-  margin-top: 24px;
+  margin-top: 28px;
+}
+
+.about-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 26px;
+  border-radius: 9999px;
+  border: 1.5px solid #111111;
+  background-color: #FFFFFF;
+  color: #111111;
+  font-family: var(--font-display, 'Jost', sans-serif);
+  font-size: 15px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.about-btn-outline:hover {
+  background-color: #111111;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.about-btn-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 26px;
+  border-radius: 9999px;
+  border: 1.5px solid #111111;
+  background-color: #111111;
+  color: #FFFFFF;
+  font-family: var(--font-display, 'Jost', sans-serif);
+  font-size: 15px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.about-btn-solid:hover {
+  background-color: #262626;
+  border-color: #262626;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.about-btn-outline:active,
+.about-btn-solid:active {
+  transform: scale(0.97);
 }
 
 /* Scroll Indicator */
@@ -138,12 +219,14 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 24px;
+  padding-bottom: 24px;
 }
 
 .about-illustration {
   width: 100%;
-  max-width: 800px;
+  max-width: 520px;
   height: auto;
   max-height: calc(100vh - 120px);
   object-fit: contain;
@@ -151,9 +234,7 @@
   display: block;
   margin-left: auto;
   margin-right: auto;
-  mix-blend-mode: multiply;
-  /* Blends white image background with the off-white container */
-  /* NO borders, shadows, or cropped containers */
+  border-radius: 4px;
 }
 
 /* -----------------------------------------

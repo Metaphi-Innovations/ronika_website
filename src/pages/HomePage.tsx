@@ -1,26 +1,81 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Layers, MousePointer, Layout, Palette } from 'lucide-react';
-import { PROJECTS, getStandoutWorks, StandoutWork } from '../data/projects.ts';
-import ProjectCard from '../components/ProjectCard';
+import { getHomeContent, HomeContentData } from '../api/contentApi';
+import { getProjects, ApiProject } from '../api/projectsApi';
+import { getImageUrl } from '../utils/imageUrl';
 import ScrollReveal from '../components/ScrollReveal';
 import ServicesSection from '../components/ServicesSection';
+import { sanitizeRichText, isHtmlString } from '../utils/richText';
 import './HomePage.css';
 
-export default function HomePage() {
-  const standoutWorks = React.useMemo(() => getStandoutWorks(), []);
-  const [colCount, setColCount] = React.useState(3);
+interface StandoutWork {
+  id: string;
+  projectSlug: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+}
 
-  React.useEffect(() => {
+export default function HomePage() {
+  const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
+  const [featuredProjects, setFeaturedProjects] = useState<StandoutWork[]>([]);
+  const [colCount, setColCount] = useState(3);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([getHomeContent(), getProjects()])
+      .then(([homeData, projectsData]) => {
+        if (!isMounted) return;
+        setHomeContent(homeData);
+
+        let list: StandoutWork[] = [];
+        if (homeData.featuredProjects && Array.isArray(homeData.featuredProjects) && homeData.featuredProjects.length > 0) {
+          list = homeData.featuredProjects.map((p: any) => {
+            const catName = typeof p.category === 'object' && p.category ? p.category.name : 'Selected Work';
+            const heroUrl = p.heroImage?.url ? getImageUrl(p.heroImage.url) : (p.images && p.images[0] ? getImageUrl(p.images[0].url) : '/assets/Client/HeroImage.png');
+            return {
+              id: p._id || p.id,
+              projectSlug: p.slug,
+              title: p.title,
+              category: catName,
+              imageUrl: heroUrl,
+            };
+          });
+        } else if (projectsData && projectsData.length > 0) {
+          const featured = projectsData.filter((p) => p.featured);
+          const displayList = featured.length > 0 ? featured : projectsData.slice(0, 6);
+          list = displayList.map((p) => {
+            const catName = typeof p.category === 'object' && p.category ? p.category.name : 'Selected Work';
+            const heroUrl = p.heroImage?.url ? getImageUrl(p.heroImage.url) : (p.images && p.images[0] ? getImageUrl(p.images[0].url) : '/assets/Client/HeroImage.png');
+            return {
+              id: p._id,
+              projectSlug: p.slug,
+              title: p.title,
+              category: catName,
+              imageUrl: heroUrl,
+            };
+          });
+        }
+
+        setFeaturedProjects(list);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Error fetching homepage CMS content:', err);
+        if (isMounted) setLoading(false);
+      });
+
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) setColCount(1);
       else if (window.innerWidth < 1024) setColCount(2);
       else setColCount(3);
     };
-
-    // Initial call
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -33,13 +88,17 @@ export default function HomePage() {
     return cols;
   };
 
-  const masonryColumns = getColumns(standoutWorks, colCount);
-  const scrollToWork = () => {
-    const workElem = document.getElementById('featured-work-section');
-    if (workElem) {
-      workElem.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const masonryColumns = useMemo(() => getColumns(featuredProjects, colCount), [featuredProjects, colCount]);
+
+  const heroImageSrc = homeContent?.heroImage?.url ? getImageUrl(homeContent.heroImage.url) : '/assets/Client/HeroImage.png';
+  const introImageSrc = homeContent?.introImage?.url ? getImageUrl(homeContent.introImage.url) : '/assets/AboutMe/IMG_1423_JPG.avif';
+  const quoteText = homeContent?.heroQuote || "Works of art\nmake rules,\nrules do not make\nworks of art.";
+  const isQuoteHtml = isHtmlString(quoteText);
+  const sanitizedQuote = isQuoteHtml ? sanitizeRichText(quoteText) : quoteText;
+  const introHeading = homeContent?.introTitle || 'Some Projects I’ve Worked on';
+  const introBio = homeContent?.introText || 'Hello, I am Ronika. I am a Visual Designer & Illustrator based in India. Graphic design is my passion. I create thoughtful branding with human visual narratives which are sure to captivate people.';
+  const isBioHtml = isHtmlString(introBio);
+  const sanitizedBio = isBioHtml ? sanitizeRichText(introBio) : introBio;
 
   return (
     <main className="home-page animate-fade-in">
@@ -49,36 +108,42 @@ export default function HomePage() {
         <div className="container editorial-hero-container">
           <div className="editorial-hero-composition full-bleed-wrapper">
             <img
-              src="/assets/Client/HeroImage.png"
+              src={heroImageSrc}
               alt="Ronika Bhatia Artwork"
               className="editorial-hero-bg-img"
             />
 
             <div className="editorial-hero-overlay-left">
               <ScrollReveal delay={0}>
-                <p className="editorial-styled-quote">
-                  Works of art<br />
-                  make rules,<br />
-                  rules do not make<br />
-                  works of art.
-                </p>
-                <p className="editorial-quote-author">
-                  — Claude Debussy
-                </p>
+                {isQuoteHtml ? (
+                  <div
+                    className="editorial-styled-quote"
+                    dangerouslySetInnerHTML={{ __html: sanitizedQuote }}
+                  />
+                ) : (
+                  <p className="editorial-styled-quote" style={{ whiteSpace: 'pre-line' }}>
+                    {quoteText}
+                  </p>
+                )}
+                {homeContent?.heroQuoteAuthor && homeContent.heroQuoteAuthor.trim() !== '' && (
+                  <p className="editorial-quote-author">
+                    — {homeContent.heroQuoteAuthor.trim().toUpperCase()}
+                  </p>
+                )}
               </ScrollReveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. FEATURED WORK SHOWCASE (5 Featured Projects) */}
+      {/* 2. FEATURED WORK SHOWCASE (Featured Projects Masonry Grid) */}
       <section id="featured-work-section" className="psycolops-projects-exhibition">
         <div className="container">
 
-          {/* Header Row with "See All Projects +" Pill Button */}
+          {/* Header Row with Dynamic Heading & Permanent "See All Projects +" CTA Button */}
           <ScrollReveal>
             <div className="exhibition-header-row">
-              <h2 className="heading-2">Some Projects I’ve Worked on</h2>
+              <h2 className="heading-2">{introHeading}</h2>
               <Link to="/work" className="btn-pill-cta">
                 See All Projects +
               </Link>
@@ -125,9 +190,14 @@ export default function HomePage() {
       <section className="home-about-section">
         <div className="container home-about-container">
           <ScrollReveal className="home-about-content" delay={0}>
-            <h2 className="home-about-text">
-              Hello, I am Ronika. I am a Visual Designer &amp; Illustrator based in India. Graphic design is my passion. I create thoughtful branding with human visual narratives which are sure to captivate people.
-            </h2>
+            {isBioHtml ? (
+              <div
+                className="home-about-text"
+                dangerouslySetInnerHTML={{ __html: sanitizedBio }}
+              />
+            ) : (
+              <h2 className="home-about-text">{introBio}</h2>
+            )}
             <div className="home-about-actions">
               <Link to="/about" className="btn-editorial-dark">
                 See About Me
@@ -140,7 +210,7 @@ export default function HomePage() {
 
           <ScrollReveal className="home-about-visual" delay={150}>
             <img
-              src="/assets/AboutMe/IMG_1423_JPG.avif"
+              src={introImageSrc}
               alt="Ronika Bhatia"
               className="about-clean-img"
             />
@@ -149,7 +219,7 @@ export default function HomePage() {
       </section>
 
       {/* 5. SERVICES SECTION */}
-      <ServicesSection />
+      <ServicesSection sectionTitle={homeContent?.servicesSectionTitle} />
 
     </main>
   );

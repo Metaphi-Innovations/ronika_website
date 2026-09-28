@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { useSite } from '../context/SiteContext';
 import './Navbar.css';
 
 export interface NavItem {
@@ -10,6 +11,10 @@ export interface NavItem {
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { settings } = useSite();
+
+  const email = settings?.contactEmail || 'ronikbhatia@gmail.com';
+  const instagram = settings?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
 
   const navItems: NavItem[] = [
     { label: 'ABOUT', path: '/about' },
@@ -94,8 +99,10 @@ export default function Navbar() {
           <div className="mobile-drawer-footer">
             <p className="mobile-drawer-tagline">Visual Designer &amp; Illustrator</p>
             <div className="mobile-drawer-pills">
-              <a href="mailto:ronikbhatia@gmail.com" className="mobile-drawer-pill">GMail</a>
-              <a href="https://instagram.com/ronika2304" target="_blank" rel="noreferrer" className="mobile-drawer-pill">Instagram</a>
+              <a href={`mailto:${email}`} className="mobile-drawer-pill">Gmail</a>
+              {instagram && (
+                <a href={instagram} target="_blank" rel="noreferrer" className="mobile-drawer-pill">Instagram</a>
+              )}
             </div>
           </div>
         </div>

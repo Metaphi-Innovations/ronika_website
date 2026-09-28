@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useSite } from '../context/SiteContext';
 import './Footer.css';
 
 export interface SocialLink {
@@ -9,6 +10,8 @@ export interface SocialLink {
 }
 
 export default function Footer() {
+  const { settings } = useSite();
+
   const navLinks = [
     { label: 'About', path: '/about' },
     { label: 'Work', path: '/work' },
@@ -16,11 +19,31 @@ export default function Footer() {
     { label: 'Contact', path: '/contact' }
   ];
 
-  const socialLinks: SocialLink[] = [
-    { name: 'Instagram', url: 'https://instagram.com/ronika2304', isExternal: true },
-    { name: 'LinkedIn', url: 'https://linkedin.com', isExternal: true },
-    { name: 'Gmail', url: 'mailto:ronikbhatia@gmail.com', isExternal: false }
-  ];
+  let socialLinks: SocialLink[] = [];
+
+  if (settings?.socialButtons && settings.socialButtons.length > 0) {
+    const activeBtns = settings.socialButtons
+      .filter((b) => b.isActive !== false)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    socialLinks = activeBtns.map((b) => ({
+      name: b.label,
+      url: b.url,
+      isExternal: !b.url.startsWith('mailto:'),
+    }));
+  } else {
+    const email = settings?.contactEmail || 'ronikabhatia@gmail.com';
+    const instagram = settings?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
+    const linkedin = settings?.socialLinks?.linkedin || 'https://linkedin.com';
+    const behance = settings?.socialLinks?.behance || '';
+
+    socialLinks = [
+      { name: 'Instagram', url: instagram, isExternal: true },
+      ...(behance ? [{ name: 'Behance', url: behance, isExternal: true }] : []),
+      { name: 'LinkedIn', url: linkedin, isExternal: true },
+      { name: 'Gmail', url: `mailto:${email}`, isExternal: false },
+    ];
+  }
 
   return (
     <footer className="minimal-footer">

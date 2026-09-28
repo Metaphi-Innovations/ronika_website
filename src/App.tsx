@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SiteProvider } from './context/SiteContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -16,24 +17,26 @@ import './styles/global.css';
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Navbar />
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/work" element={<WorkPage />} />
-          <Route path="/gallery" element={<GalleryPage />} />
-          <Route path="/project/:slug" element={<ProjectDetailPage />} />
-          <Route path="/work/:slug" element={<ProjectDetailPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/shop/enquiry/:productSlug" element={<ShopEnquiryPage />} />
-          <Route path="/shop/:productSlug" element={<ShopProductDetailPage />} />
-        </Routes>
-      </main>
-      <Footer />
-    </Router>
+    <SiteProvider>
+      <Router>
+        <ScrollToTop />
+        <Navbar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/work" element={<WorkPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/project/:slug" element={<ProjectDetailPage />} />
+            <Route path="/work/:slug" element={<ProjectDetailPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/shop/enquiry/:productSlug" element={<ShopEnquiryPage />} />
+            <Route path="/shop/:productSlug" element={<ShopProductDetailPage />} />
+          </Routes>
+        </main>
+        <Footer />
+      </Router>
+    </SiteProvider>
   );
 }

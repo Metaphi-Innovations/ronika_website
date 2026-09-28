@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { SHOP_PRODUCTS } from '../data/shop';
+import { getShopProductBySlug } from '../api/shopApi';
+import { adaptApiShopProduct } from '../utils/shopAdapter';
+import type { ShopProduct } from '../types/shop';
 import { ArrowLeft } from 'lucide-react';
 import './ShopProductDetailPage.css';
 
@@ -8,22 +10,51 @@ export default function ShopProductDetailPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const navigate = useNavigate();
   
-  const [product, setProduct] = useState(SHOP_PRODUCTS.find(p => p.slug === productSlug));
+  const [product, setProduct] = useState<ShopProduct | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const found = SHOP_PRODUCTS.find(p => p.slug === productSlug);
-    setProduct(found);
-    setActiveImageIndex(0);
+    if (!productSlug) return;
+    let isMounted = true;
+    setLoading(true);
+
+    getShopProductBySlug(productSlug)
+      .then((apiProd) => {
+        if (!isMounted) return;
+        setProduct(adaptApiShopProduct(apiProd));
+        setActiveImageIndex(0);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load product details:', err);
+        if (isMounted) {
+          setError('Product not found');
+          setLoading(false);
+        }
+      });
+
     window.scrollTo(0, 0);
+    return () => { isMounted = false; };
   }, [productSlug]);
 
-  if (!product) {
+  if (loading) {
     return (
       <main className="shop-detail-page shop-not-found animate-fade-in">
-        <div className="container">
+        <div className="container" style={{ padding: '6rem 0', textAlign: 'center', opacity: 0.6 }}>
+          <p>Loading product details...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <main className="shop-detail-page shop-not-found animate-fade-in">
+        <div className="container" style={{ padding: '6rem 0', textAlign: 'center' }}>
           <h1 className="heading-1">Product Not Found</h1>
-          <button className="btn-shop-secondary" onClick={() => navigate('/shop')}>
+          <button className="btn-shop-secondary" onClick={() => navigate('/shop')} style={{ marginTop: '1.5rem' }}>
             Return to Shop
           </button>
         </div>
@@ -34,6 +65,15 @@ export default function ShopProductDetailPage() {
   const handleEnquiry = () => {
     navigate(`/shop/enquiry/${product.slug}`);
   };
+
+  const detailsList: { label: string; value: string }[] = [];
+  if (product.details) {
+    if (product.details.medium) detailsList.push({ label: 'Medium', value: product.details.medium });
+    if (product.details.dimensions) detailsList.push({ label: 'Dimensions', value: product.details.dimensions });
+    if (product.details.materials) detailsList.push({ label: 'Materials', value: product.details.materials });
+    if (product.details.year) detailsList.push({ label: 'Year', value: product.details.year });
+    if (product.details.availability) detailsList.push({ label: 'Availability', value: product.details.availability });
+  }
 
   return (
     <main className="shop-detail-page animate-fade-in">
@@ -81,18 +121,22 @@ export default function ShopProductDetailPage() {
             </div>
 
             <div className="shop-detail-description">
-              <p>{product.description}</p>
+              <p>{product.description || product.shortDescription}</p>
             </div>
 
-            {/* Features Bullet Points */}
-            <div className="shop-detail-features">
-              <ul>
-                <li>High-quality archival materials</li>
-                <li>Signed and numbered by the artist</li>
-                <li>Certificate of authenticity included</li>
-                <li>Securely packaged for global shipping</li>
-              </ul>
-            </div>
+            {/* Authentic CMS Product Details & Bullet Points */}
+            {(detailsList.length > 0 || (product.details?.bulletPoints && product.details.bulletPoints.length > 0)) && (
+              <div className="shop-detail-features">
+                <ul>
+                  {detailsList.map((item, idx) => (
+                    <li key={`detail-${idx}`}><strong>{item.label}:</strong> {item.value}</li>
+                  ))}
+                  {product.details?.bulletPoints?.map((point, idx) => (
+                    <li key={`bullet-${idx}`}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <button className="btn-shop-primary shop-detail-cta" onClick={handleEnquiry}>
               Shop Now

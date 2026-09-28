@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { SHOP_PRODUCTS } from '../data/shop';
+import { getShopProductBySlug } from '../api/shopApi';
+import { adaptApiShopProduct } from '../utils/shopAdapter';
+import { submitShopEnquiry } from '../api/enquiryApi';
+import type { ShopProduct } from '../types/shop';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import './ShopEnquiryPage.css';
 
@@ -8,10 +11,11 @@ export default function ShopEnquiryPage() {
   const { productSlug } = useParams<{ productSlug: string }>();
   const navigate = useNavigate();
   
-  const [product, setProduct] = useState(SHOP_PRODUCTS.find(p => p.slug === productSlug));
-  
-  // Frontend-only form state
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [product, setProduct] = useState<ShopProduct | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,17 +24,41 @@ export default function ShopEnquiryPage() {
   });
 
   useEffect(() => {
-    const found = SHOP_PRODUCTS.find(p => p.slug === productSlug);
-    setProduct(found);
+    if (!productSlug) return;
+    let isMounted = true;
+    setLoading(true);
+
+    getShopProductBySlug(productSlug)
+      .then((apiProd) => {
+        if (!isMounted) return;
+        setProduct(adaptApiShopProduct(apiProd));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to load product for enquiry:', err);
+        if (isMounted) setLoading(false);
+      });
+
     window.scrollTo(0, 0);
+    return () => { isMounted = false; };
   }, [productSlug]);
+
+  if (loading) {
+    return (
+      <main className="shop-enquiry-page shop-not-found animate-fade-in">
+        <div className="container" style={{ padding: '6rem 0', textAlign: 'center', opacity: 0.6 }}>
+          <p>Loading enquiry details...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!product) {
     return (
       <main className="shop-enquiry-page shop-not-found animate-fade-in">
-        <div className="container">
+        <div className="container" style={{ padding: '6rem 0', textAlign: 'center' }}>
           <h1 className="heading-1">Product Not Found</h1>
-          <button className="btn-shop-secondary" onClick={() => navigate('/shop')}>
+          <button className="btn-shop-secondary" onClick={() => navigate('/shop')} style={{ marginTop: '1.5rem' }}>
             Return to Shop
           </button>
         </div>
@@ -43,11 +71,30 @@ export default function ShopEnquiryPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate frontend validation & success state only. No backend submission.
-    if (formData.name && formData.email) {
+    if (submitting) return;
+    if (!formData.name.trim() || !formData.email.trim()) return;
+
+    try {
+      setSubmitting(true);
+      setErrorMessage('');
+      await submitShopEnquiry({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        message: formData.message.trim(),
+        productName: product.name,
+        productSlug: product.slug,
+        productId: product.id,
+      });
+
+      // Successful submission transitions to success confirmation
       setIsSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error submitting enquiry. Please check your connection.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -90,9 +137,7 @@ export default function ShopEnquiryPage() {
                 <CheckCircle2 size={48} className="success-icon" />
                 <h3>Enquiry Sent</h3>
                 <p>
-                  Thank you, {formData.name}. Your enquiry regarding <strong>{product.name}</strong> has been received locally. 
-                  <br/><br/>
-                  <em>(Note: This is a frontend demonstration. No email was actually sent to Ronika.)</em>
+                  Thank you, {formData.name}. Your enquiry regarding <strong>{product.name}</strong> has been received. 
                 </p>
                 <button className="btn-shop-secondary mt-4" onClick={() => navigate('/shop')}>
                   Continue Browsing
@@ -100,18 +145,33 @@ export default function ShopEnquiryPage() {
               </div>
             ) : (
               <form className="shop-enquiry-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label htmlFor="productRef">Product Reference</label>
-                  <input 
-                    type="text" 
-                    id="productRef"
-                    value={product.name}
-                    disabled
-                    className="form-input disabled-input"
-                  />
-                </div>
+                {errorMessage && (
+                  <div
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: '#FFEBEE',
+                      border: '1px solid #FFCDD2',
+                      borderRadius: '6px',
+                      color: '#C62828',
+                      fontSize: '13px',
+                      marginBottom: '1rem',
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+                )}
 
                 <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="productRef">Product Reference</label>
+                    <input 
+                      type="text" 
+                      id="productRef"
+                      value={product.name}
+                      disabled
+                      className="form-input disabled-input"
+                    />
+                  </div>
                   <div className="form-group">
                     <label htmlFor="name">Full Name *</label>
                     <input 
@@ -125,6 +185,9 @@ export default function ShopEnquiryPage() {
                       placeholder="Jane Doe"
                     />
                   </div>
+                </div>
+
+                <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="email">Email Address *</label>
                     <input 
@@ -138,19 +201,18 @@ export default function ShopEnquiryPage() {
                       placeholder="jane@example.com"
                     />
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="phone">Phone / WhatsApp (Optional)</label>
-                  <input 
-                    type="tel" 
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="+1 234 567 8900"
-                  />
+                  <div className="form-group">
+                    <label htmlFor="phone">Phone / WhatsApp (Optional)</label>
+                    <input 
+                      type="tel" 
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="form-input"
+                      placeholder="+1 234 567 8900"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -163,12 +225,16 @@ export default function ShopEnquiryPage() {
                     required
                     className="form-input form-textarea"
                     placeholder="I am interested in purchasing this piece..."
-                    rows={5}
+                    rows={3}
                   ></textarea>
                 </div>
 
-                <button type="submit" className="btn-shop-primary btn-submit-enquiry">
-                  Send Enquiry
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-shop-primary btn-submit-enquiry"
+                >
+                  {submitting ? 'Sending Enquiry...' : 'Send Enquiry'}
                 </button>
               </form>
             )}

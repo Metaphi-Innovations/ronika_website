@@ -34,6 +34,18 @@
   text-transform: none;
 }
 
+.gallery-subtitle-text p {
+  margin: 0;
+  display: inline;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.gallery-subtitle-text em,
+.gallery-subtitle-text i,
 .font-italic {
   font-style: italic;
   font-family: 'Playfair Display', serif;
@@ -75,21 +87,28 @@
   opacity: 1;
 }
 
-/* Masonry Exhibition Wall (3 Columns) */
+/* Masonry Exhibition Wall (Left to Right: 1 2 3, 4 5 6, 7 8 9...) */
 .psycolops-gallery-wall {
-  column-count: 3;
-  column-gap: 30px;
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
   width: 100%;
 }
 
+.gallery-masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  min-width: 0;
+}
+
 .gallery-wall-card {
-  break-inside: avoid;
-  margin-bottom: 30px;
-  display: block;
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
   background-color: var(--bg-surface, #F7F6F2);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .gallery-card-frame {
@@ -122,12 +141,15 @@
   }
 
   .psycolops-gallery-wall {
-    column-count: 2;
-    column-gap: 24px;
+    gap: 24px;
+  }
+
+  .gallery-masonry-column {
+    gap: 24px;
   }
 
   .gallery-wall-card {
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
 }
 
@@ -138,8 +160,11 @@
   }
 
   .psycolops-gallery-wall {
-    column-count: 1;
-    column-gap: 0;
+    gap: 20px;
+  }
+
+  .gallery-masonry-column {
+    gap: 20px;
   }
 
   .gallery-filter-pills-row {

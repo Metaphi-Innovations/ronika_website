@@ -10,6 +10,7 @@ export interface ShopProductDetails {
   materials?: string;
   year?: string;
   availability?: string;
+  bulletPoints?: string[];
 }
 
 export interface ShopProduct {

@@ -1,32 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ABOUT_DATA, AboutContent } from '../data/about.ts';
+import { getAboutContent, AboutContentData } from '../api/contentApi';
+import { getImageUrl } from '../utils/imageUrl';
+import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import ServicesSection from '../components/ServicesSection';
 import './AboutPage.css';
 
 export default function AboutPage() {
-  const [content, setContent] = useState<AboutContent | null>(null);
+  const [content, setContent] = useState<AboutContentData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // In the future, this is where the API call will happen.
-  // For now, it loads from the frontend config object.
   useEffect(() => {
-    // Simulate API fetch delay
-    const loadContent = async () => {
-      // try {
-      //   const res = await fetch('/api/about');
-      //   const data = await res.json();
-      //   setContent(data);
-      // } catch (error) {
-      //   console.error("Failed to fetch About content, using fallback.", error);
-      //   setContent(ABOUT_DATA);
-      // }
-      setContent(ABOUT_DATA);
-    };
+    let isMounted = true;
+    getAboutContent()
+      .then((data) => {
+        if (isMounted) {
+          setContent(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load About content from API:', err);
+        if (isMounted) setLoading(false);
+      });
 
-    loadContent();
+    return () => { isMounted = false; };
   }, []);
 
-  if (!content) return null; // Or a loading spinner
+  const headingText = content?.heading || 'About Ronika Bhatia';
+  const isHeadingHtml = isHtmlString(headingText);
+  const sanitizedHeading = isHeadingHtml ? sanitizeRichText(headingText) : headingText;
+
+  const paragraphs = content?.bioParagraphs && content.bioParagraphs.length > 0 
+    ? content.bioParagraphs 
+    : [
+        'Ronika Bhatia is a visual designer and illustrator based in Mumbai, India.',
+        'Specializing in brand identity, publication design, and visual vernacular explorations.'
+      ];
+
+  const headshotSrc = content?.headshotImage?.url 
+    ? getImageUrl(content.headshotImage.url) 
+    : (content?.supportingImage?.url ? getImageUrl(content.supportingImage.url) : '/assets/AboutMe/IMG_1423_JPG.avif');
 
   return (
     <main className="about-page animate-fade-in">
@@ -35,51 +49,41 @@ export default function AboutPage() {
         
         <div className="about-content-wrapper">
           
-          {/* LEFT: TEXT CONTENT */}
+          {/* LEFT: TEXT CONTENT (STARTS DIRECTLY FROM HEADER SECTION) */}
           <div className="about-text-column">
             
-            <div className="about-top-label">
-              <span>{content.topLabel}</span>
-              <div className="about-label-line"></div>
-            </div>
-
-            <h1 
-              className="about-main-heading"
-              dangerouslySetInnerHTML={{ __html: content.heading }}
-            />
+            {isHeadingHtml ? (
+              <h1 
+                className="about-main-heading"
+                dangerouslySetInnerHTML={{ __html: sanitizedHeading }}
+              />
+            ) : (
+              <h1 className="about-main-heading">
+                {headingText}
+              </h1>
+            )}
             
             <div className="about-body-text">
-              {content.paragraphs.map((p, idx) => (
+              {paragraphs.map((p, idx) => (
                 <p key={idx}>{p}</p>
               ))}
             </div>
 
             <div className="about-cta-group">
-              {content.ctaPrimary.link.startsWith('#') ? (
-                <a 
-                  href={content.ctaPrimary.link} 
-                  className="btn-editorial-dark"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.querySelector(content.ctaPrimary.link)?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  {content.ctaPrimary.label} &rarr;
-                </a>
-              ) : (
-                <Link to={content.ctaPrimary.link} className="btn-editorial-dark">
-                  {content.ctaPrimary.label} &rarr;
-                </Link>
-              )}
-              
-              <Link to={content.ctaSecondary.link} className="btn-pill-cta">
-                {content.ctaSecondary.label} &rarr;
+              <a 
+                href="#services" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById('services');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }} 
+                className="about-btn-outline"
+              >
+                Services &rarr;
+              </a>
+              <Link to="/contact" className="about-btn-solid">
+                {content?.ctaText || 'Get In Touch'} &rarr;
               </Link>
-            </div>
-            
-            <div className="about-scroll-indicator">
-              <div className="about-scroll-line"></div>
-              <span>{content.scrollText}</span>
             </div>
 
           </div>
@@ -87,8 +91,8 @@ export default function AboutPage() {
           {/* RIGHT: ILLUSTRATION */}
           <div className="about-visual-column">
             <img 
-              src={content.illustrationUrl} 
-              alt={content.illustrationAlt} 
+              src={headshotSrc} 
+              alt="Ronika Bhatia" 
               className="about-illustration"
             />
           </div>
