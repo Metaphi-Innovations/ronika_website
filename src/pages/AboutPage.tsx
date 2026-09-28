@@ -33,14 +33,23 @@ export default function AboutPage() {
 
   const paragraphs = content?.bioParagraphs && content.bioParagraphs.length > 0 
     ? content.bioParagraphs 
-    : [
-        'Ronika Bhatia is a visual designer and illustrator based in Mumbai, India.',
-        'Specializing in brand identity, publication design, and visual vernacular explorations.'
-      ];
+    : [];
 
   const headshotSrc = content?.headshotImage?.url 
     ? getImageUrl(content.headshotImage.url) 
-    : (content?.supportingImage?.url ? getImageUrl(content.supportingImage.url) : '/assets/AboutMe/IMG_1423_JPG.avif');
+    : (content?.supportingImage?.url ? getImageUrl(content.supportingImage.url) : '');
+
+  if (loading) {
+    return (
+      <main className="about-page animate-fade-in">
+        <section className="about-editorial-page">
+          <div className="container about-container" style={{ padding: '6rem 0', textAlign: 'center', opacity: 0.6 }}>
+            Loading About page...
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="about-page animate-fade-in">

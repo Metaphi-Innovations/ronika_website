@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { getGalleryCategories, getGalleryImages, GalleryCategoryData, GalleryImageData } from '../api/galleryApi';
-import { getProjects, ApiProject } from '../api/projectsApi';
 import { getImageUrl } from '../utils/imageUrl';
 import { useSite } from '../context/SiteContext';
 import { isHtmlString, sanitizeRichText } from '../utils/richText';
@@ -20,33 +19,17 @@ export interface GalleryDisplayItem {
 export default function GalleryPage() {
   const [categories, setCategories] = useState<GalleryCategoryData[]>([]);
   const [images, setImages] = useState<GalleryImageData[]>([]);
-  const [fallbackItems, setFallbackItems] = useState<GalleryDisplayItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [loading, setLoading] = useState<boolean>(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    Promise.all([getGalleryCategories(), getGalleryImages(), getProjects()])
-      .then(([cats, imgs, projs]) => {
+    Promise.all([getGalleryCategories(), getGalleryImages()])
+      .then(([cats, imgs]) => {
         if (!isMounted) return;
         setCategories(cats);
         setImages(imgs);
-
-        // Fallback from projects if gallery images collection is empty
-        const projItems: GalleryDisplayItem[] = projs.flatMap(project => {
-          const catName = typeof project.category === 'object' && project.category ? project.category.name : 'Work';
-          return (project.images || []).map((img, idx) => ({
-            id: img._id || `${project._id}-${idx}`,
-            src: getImageUrl(img.url),
-            caption: `${project.title} — Visual Output ${String(idx + 1).padStart(2, '0')}`,
-            projectTitle: project.title,
-            categoryName: catName,
-            projectSlug: project.slug,
-          }));
-        });
-
-        setFallbackItems(projItems);
         setLoading(false);
       })
       .catch((err) => {
@@ -58,25 +41,23 @@ export default function GalleryPage() {
   }, []);
 
   const displayItems: GalleryDisplayItem[] = useMemo(() => {
-    if (images && images.length > 0) {
-      const sorted = [...images].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
-      return sorted.map((img) => {
-        const catObj = typeof img.category === 'object' && img.category ? img.category : null;
-        const catName = catObj ? catObj.name : 'Gallery';
-        const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
-        return {
-          id: img._id,
-          src: getImageUrl(img.image?.url),
-          caption: img.title || img.caption || 'Artwork',
-          projectTitle: img.title || 'Artwork',
-          categoryName: catName,
-          categoryId: catId,
-          projectSlug: img.projectSlug,
-        };
-      });
-    }
-    return fallbackItems;
-  }, [images, fallbackItems]);
+    if (!images || images.length === 0) return [];
+    const sorted = [...images].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    return sorted.map((img) => {
+      const catObj = typeof img.category === 'object' && img.category ? img.category : null;
+      const catName = catObj ? catObj.name : 'Gallery';
+      const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
+      return {
+        id: img._id,
+        src: getImageUrl(img.image?.url),
+        caption: img.title || img.caption || 'Artwork',
+        projectTitle: img.title || 'Artwork',
+        categoryName: catName,
+        categoryId: catId,
+        projectSlug: img.projectSlug,
+      };
+    });
+  }, [images]);
 
   const filteredItems = useMemo(() => {
     if (activeCategory === "ALL") return displayItems;
@@ -90,10 +71,6 @@ export default function GalleryPage() {
     const list = [{ id: 'ALL', name: 'ALL' }];
     if (categories && categories.length > 0) {
       categories.forEach(c => list.push({ id: c._id, name: c.name.toUpperCase() }));
-    } else {
-      ['BRANDING', 'MOTION', 'SKETCHBOOKS', 'TYPOGRAPHY', 'ILLUSTRATION'].forEach(name => {
-        list.push({ id: name, name });
-      });
     }
     return list;
   }, [categories]);

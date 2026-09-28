@@ -31,18 +31,21 @@ export default function Footer() {
       url: b.url,
       isExternal: !b.url.startsWith('mailto:'),
     }));
-  } else {
-    const email = settings?.contactEmail || 'ronikabhatia@gmail.com';
-    const instagram = settings?.socialLinks?.instagram || 'https://instagram.com/ronika_bhatia';
-    const linkedin = settings?.socialLinks?.linkedin || 'https://linkedin.com';
-    const behance = settings?.socialLinks?.behance || '';
-
-    socialLinks = [
-      { name: 'Instagram', url: instagram, isExternal: true },
-      ...(behance ? [{ name: 'Behance', url: behance, isExternal: true }] : []),
-      { name: 'LinkedIn', url: linkedin, isExternal: true },
-      { name: 'Gmail', url: `mailto:${email}`, isExternal: false },
-    ];
+  } else if (settings?.socialLinks || settings?.contactEmail) {
+    const links: SocialLink[] = [];
+    if (settings.socialLinks?.instagram) {
+      links.push({ name: 'Instagram', url: settings.socialLinks.instagram, isExternal: true });
+    }
+    if (settings.socialLinks?.behance) {
+      links.push({ name: 'Behance', url: settings.socialLinks.behance, isExternal: true });
+    }
+    if (settings.socialLinks?.linkedin) {
+      links.push({ name: 'LinkedIn', url: settings.socialLinks.linkedin, isExternal: true });
+    }
+    if (settings.contactEmail) {
+      links.push({ name: 'Gmail', url: `mailto:${settings.contactEmail}`, isExternal: false });
+    }
+    socialLinks = links;
   }
 
   return (

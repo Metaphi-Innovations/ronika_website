@@ -3,30 +3,6 @@ import { Layout, MousePointer, Palette, Sparkles } from 'lucide-react';
 import { getServices, ServiceData } from '../api/servicesApi';
 import ScrollReveal from './ScrollReveal';
 
-const DEFAULT_SERVICES = [
-  {
-    num: '01.',
-    icon: Layout,
-    title: 'Illustration',
-    desc: 'Editorial artwork, character sketches, vector art, digital sketchbook entries, and custom brand motifs.',
-    titleColor: '#e06e9b'
-  },
-  {
-    num: '02.',
-    icon: MousePointer,
-    title: 'Design',
-    desc: 'Visual identities, brand strategy, typography systems, editorial layouts, poster series, and packaging.',
-    titleColor: '#8aab18'
-  },
-  {
-    num: '03.',
-    icon: Palette,
-    title: 'Artwork Commissions',
-    desc: 'Custom artistic commissions, spatial curation, object staging, and narrative storytelling for contemporary spaces.',
-    titleColor: '#d89728'
-  }
-];
-
 const COLORS = ['#e06e9b', '#8aab18', '#d89728', '#6a82fb', '#fc5c7d'];
 const ICONS = [Layout, MousePointer, Palette, Sparkles];
 
@@ -35,34 +11,43 @@ interface ServicesSectionProps {
 }
 
 export default function ServicesSection({ sectionTitle }: ServicesSectionProps) {
-  const [services, setServices] = useState<any[]>(DEFAULT_SERVICES);
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
     getServices()
       .then((data) => {
-        if (!isMounted || !Array.isArray(data)) return;
-        const activeOnly = data.filter((s) => s.isActive !== false);
-        const mapped = activeOnly.map((s, idx) => {
-          const IconComp = ICONS[idx % ICONS.length];
-          return {
-            num: `${String(idx + 1).padStart(2, '0')}.`,
-            icon: IconComp,
-            title: s.title,
-            desc: s.description,
-            titleColor: COLORS[idx % COLORS.length]
-          };
-        });
-        setServices(mapped);
+        if (!isMounted) return;
+        if (Array.isArray(data)) {
+          const activeOnly = data.filter((s) => s.isActive !== false);
+          const mapped = activeOnly.map((s, idx) => {
+            const IconComp = ICONS[idx % ICONS.length];
+            return {
+              num: `${String(idx + 1).padStart(2, '0')}.`,
+              icon: IconComp,
+              title: s.title,
+              desc: s.description,
+              titleColor: COLORS[idx % COLORS.length]
+            };
+          });
+          setServices(mapped);
+        }
+        setLoading(false);
       })
       .catch((err) => {
         console.warn('Failed to load services from API:', err);
+        if (isMounted) setLoading(false);
       });
 
     return () => { isMounted = false; };
   }, []);
 
   const displayTitle = sectionTitle || 'Services I offer:';
+
+  if (!loading && services.length === 0) {
+    return null;
+  }
 
   return (
     <section id="services" className="home-services-section">

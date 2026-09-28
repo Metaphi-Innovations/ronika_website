@@ -44,7 +44,7 @@ export default function HomePage() {
           });
         } else if (projectsData && projectsData.length > 0) {
           const featured = projectsData.filter((p) => p.featured);
-          const displayList = featured.length > 0 ? featured : projectsData.slice(0, 6);
+          const displayList = (featured.length > 0 ? featured : projectsData).slice(0, 7);
           list = displayList.map((p) => {
             const catName = typeof p.category === 'object' && p.category ? p.category.name : 'Selected Work';
             const heroUrl = p.heroImage?.url ? getImageUrl(p.heroImage.url) : (p.images && p.images[0] ? getImageUrl(p.images[0].url) : '/assets/Client/HeroImage.png');
