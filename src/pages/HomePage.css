@@ -622,12 +622,35 @@
     /* 2 columns on tablet */
     gap: 32px;
   }
+
+  .standout-masonry-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
 }
 
 @media (max-width: 768px) {
   .home-services-grid {
     grid-template-columns: 1fr;
     /* Stack on smaller tablet / mobile */
+  }
+
+  .standout-masonry-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .editorial-hero-bg-img {
+    object-position: center center;
+  }
+}
+
+/* Touch device support: reveal project title & category overlay gracefully without requiring mouse hover */
+@media (hover: none), (max-width: 768px) {
+  .standout-label-overlay {
+    opacity: 1 !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%) !important;
+    padding: 50px 16px 14px 16px !important;
   }
 }
 

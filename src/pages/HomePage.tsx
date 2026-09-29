@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getHomeContent, HomeContentData } from '../api/contentApi';
+import { getCategories } from '../api/projectsApi';
 import { getImageUrl } from '../utils/imageUrl';
 import ScrollReveal from '../components/ScrollReveal';
 import ServicesSection from '../components/ServicesSection';
@@ -23,10 +24,20 @@ export default function HomePage() {
 
   useEffect(() => {
     let isMounted = true;
-    getHomeContent()
-      .then((homeData) => {
+    Promise.all([
+      getHomeContent(),
+      getCategories().catch(() => []),
+    ])
+      .then(([homeData, categoriesData]) => {
         if (!isMounted) return;
         setHomeContent(homeData);
+
+        const categoryMap = new Map<string, string>();
+        if (Array.isArray(categoriesData)) {
+          categoriesData.forEach((c) => {
+            if (c._id && c.name) categoryMap.set(c._id, c.name);
+          });
+        }
 
         let list: StandoutWork[] = [];
         // STRICT: ONLY show projects that the admin has explicitly configured and saved in featuredProjects
@@ -34,7 +45,13 @@ export default function HomePage() {
           list = homeData.featuredProjects
             .filter((p: any) => p && typeof p === 'object' && p.published !== false)
             .map((p: any) => {
-              const catName = typeof p.category === 'object' && p.category ? p.category.name : 'Selected Work';
+              let catName = '';
+              if (typeof p.category === 'object' && p.category?.name) {
+                catName = p.category.name;
+              } else if (typeof p.category === 'string' && p.category) {
+                catName = categoryMap.get(p.category) || (!/^[0-9a-fA-F]{24}$/.test(p.category) ? p.category : '');
+              }
+
               const heroUrl = p.heroImage?.url
                 ? getImageUrl(p.heroImage.url)
                 : p.images && p.images[0]
@@ -168,7 +185,7 @@ export default function HomePage() {
                         )}
                         <div className="standout-label-overlay">
                           <h3 className="standout-title">{work.title}</h3>
-                          <p className="standout-category">{work.category}</p>
+                          {work.category && <p className="standout-category">{work.category}</p>}
                         </div>
                       </Link>
                     </ScrollReveal>

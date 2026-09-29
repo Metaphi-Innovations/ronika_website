@@ -322,3 +322,10 @@ button {
     transition: none !important;
   }
 }
+
+/* Global Bold & Larger List Bullets */
+ul li::marker {
+  font-size: 1.35em;
+  font-weight: 800;
+  color: var(--text-main, #111111);
+}

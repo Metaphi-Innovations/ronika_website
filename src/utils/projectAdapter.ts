@@ -5,7 +5,7 @@ import { getImageUrl } from './imageUrl';
 export function adaptApiProject(apiProj: ApiProject): Project {
   const categoryName = typeof apiProj.category === 'object' && apiProj.category
     ? apiProj.category.name
-    : (typeof apiProj.category === 'string' ? apiProj.category : 'Selected Work');
+    : (typeof apiProj.category === 'string' && !/^[0-9a-fA-F]{24}$/.test(apiProj.category) ? apiProj.category : '');
 
   const heroUrl = apiProj.heroImage?.url
     ? getImageUrl(apiProj.heroImage.url)

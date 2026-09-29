@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { getProjectBySlug, getProjects, ApiProject } from '../api/projectsApi';
 import { adaptApiProject } from '../utils/projectAdapter';
 import type { Project } from '../types/portfolio';
@@ -9,10 +10,19 @@ import './ProjectDetailPage.css';
 
 export default function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [otherProjects, setOtherProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/work');
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -77,6 +87,17 @@ export default function ProjectDetailPage() {
       {/* 1. Header & Title Section */}
       <section className="detail-hero-section">
         <div className="container">
+          {/* Back Navigation Button */}
+          <button 
+            type="button" 
+            className="project-back-btn" 
+            onClick={handleBack}
+            aria-label="Back to projects"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to Projects</span>
+          </button>
+
           <div className="detail-header-block">
             <div className="detail-category-tag">
               <span>{typeof project.category === 'string' ? project.category.toUpperCase() : ''}</span>

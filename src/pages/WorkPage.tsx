@@ -53,7 +53,7 @@ export default function WorkPage() {
               <h1 className="work-page-title">All Projects</h1>
 
               {categories.length > 0 && (
-                <div className="work-category-filters" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                <div className="work-category-filters">
                   <button
                     className={`btn-pill-cta ${selectedCat === 'All' ? 'active' : ''}`}
                     onClick={() => setSelectedCat('All')}

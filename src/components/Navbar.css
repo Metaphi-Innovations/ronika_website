@@ -61,7 +61,7 @@
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: clamp(20px, 2.5vw, 40px);
 }
 
 .nav-link {
@@ -102,13 +102,14 @@
   height: calc(100vh - 60px);
   height: calc(100dvh - 60px);
   background-color: var(--bg-primary, #ffffff);
-  padding: 2rem 1.5rem 3rem 1.5rem;
+  padding: 2rem 1.5rem max(3rem, env(safe-area-inset-bottom, 24px)) 1.5rem;
   z-index: 999;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   animation: drawerSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

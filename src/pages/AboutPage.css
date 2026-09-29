@@ -325,3 +325,14 @@
     /* Hide on mobile */
   }
 }
+
+@media (max-width: 380px) {
+  .about-editorial-page .about-container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .about-main-heading {
+    font-size: 28px;
+  }
+}

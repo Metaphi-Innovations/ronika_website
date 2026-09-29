@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getShopProductBySlug } from '../api/shopApi';
 import { adaptApiShopProduct } from '../utils/shopAdapter';
 import type { ShopProduct } from '../types/shop';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import './ShopProductDetailPage.css';
 
 export default function ShopProductDetailPage() {
@@ -38,6 +38,29 @@ export default function ShopProductDetailPage() {
     window.scrollTo(0, 0);
     return () => { isMounted = false; };
   }, [productSlug]);
+
+  const handlePrevImage = useCallback(() => {
+    if (!product || product.images.length <= 1) return;
+    setActiveImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+  }, [product]);
+
+  const handleNextImage = useCallback(() => {
+    if (!product || product.images.length <= 1) return;
+    setActiveImageIndex((prev) => (prev + 1) % product.images.length);
+  }, [product]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrevImage();
+      } else if (e.key === 'ArrowRight') {
+        handleNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlePrevImage, handleNextImage]);
 
   if (loading) {
     return (
@@ -111,6 +134,41 @@ export default function ShopProductDetailPage() {
               alt={product.images[activeImageIndex]?.alt || product.name}
               className="shop-detail-main-image"
             />
+
+            {/* Left & Right Navigation Arrows */}
+            {product.images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="shop-detail-arrow-btn prev"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevImage();
+                  }}
+                  aria-label="Previous image"
+                  title="Previous image"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+                <button
+                  type="button"
+                  className="shop-detail-arrow-btn next"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNextImage();
+                  }}
+                  aria-label="Next image"
+                  title="Next image"
+                >
+                  <ChevronRight size={22} />
+                </button>
+
+                {/* Subtle Image Counter Badge */}
+                <div className="shop-detail-image-counter">
+                  {activeImageIndex + 1} / {product.images.length}
+                </div>
+              </>
+            )}
           </div>
 
           {/* RIGHT: Product Information */}

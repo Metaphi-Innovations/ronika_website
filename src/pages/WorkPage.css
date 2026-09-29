@@ -30,6 +30,28 @@
   line-height: 1.1;
 }
 
+.work-category-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.work-category-filters .btn-pill-cta {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  font-size: 14px;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
 @media (max-width: 1280px) {
   .psycolops-work-page .psycolops-projects-exhibition {
     padding-left: 80px;
@@ -41,6 +63,36 @@
   .psycolops-work-page .psycolops-projects-exhibition {
     padding-left: 40px;
     padding-right: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .work-page-header {
+    margin-bottom: 28px !important;
+  }
+  
+  .work-category-filters {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    padding-top: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+
+  .work-category-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .work-category-filters .btn-pill-cta {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 13px;
   }
 }
 
@@ -56,4 +108,4 @@
     padding-left: 14px;
     padding-right: 14px;
   }
-}
+}

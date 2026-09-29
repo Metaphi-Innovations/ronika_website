@@ -18,8 +18,38 @@
    1. Hero Header Section
    ----------------------------------------- */
 .detail-hero-section {
-  padding-top: 60px;
-  padding-bottom: 40px;
+  padding-top: 36px;
+  padding-bottom: 0px;
+}
+
+.project-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display, 'Inter', sans-serif);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted, #777777);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  letter-spacing: 0.03em;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.project-back-btn:hover {
+  color: var(--text-main, #111111);
+}
+
+.project-back-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.project-back-btn:hover svg {
+  transform: translateX(-3px);
 }
 
 .detail-header-block {
@@ -81,17 +111,17 @@
    2. Narrative Brief & Metadata Section
    ----------------------------------------- */
 .detail-narrative-section {
-  padding-top: 60px;
-  padding-bottom: 60px;
+  padding-top: 28px;
+  padding-bottom: 16px;
 }
 
 .narrative-grid {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 80px;
-  padding: 60px 0;
-  border-top: 1px solid var(--border-color, #E2E0D8);
-  border-bottom: 1px solid var(--border-color, #E2E0D8);
+  padding: 0 0 10px 0;
+  border-top: none;
+  border-bottom: none;
 }
 
 .narrative-meta {
@@ -151,8 +181,8 @@
    3. Section Divider & Overview Line
    ----------------------------------------- */
 .detail-divider-section {
-  padding-top: 20px;
-  padding-bottom: 40px;
+  padding-top: 8px;
+  padding-bottom: 28px;
 }
 
 .detail-section-divider {
