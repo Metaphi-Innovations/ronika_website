@@ -19,10 +19,13 @@ export function sanitizeRichText(html?: string): string {
   // 3. Prevent javascript: URLs
   clean = clean.replace(/href\s*=\s*["']?\s*javascript:[^"'>\s]*/gi, 'href="#"');
 
+  // Convert any heading tags to paragraphs to avoid excessive line gaps
+  clean = clean.replace(/<\/?h[1-6]\b[^>]*>/gi, (tag) => (tag.startsWith('</') ? '</p>' : '<p>'));
+
   // 4. Filter allowed tags and attributes
   const allowedTags = [
     'p', 'br', 'b', 'strong', 'i', 'em', 'u', 's', 'strike', 'del',
-    'ol', 'ul', 'li', 'a', 'h3', 'div', 'span'
+    'ol', 'ul', 'li', 'a', 'div', 'span'
   ];
 
   clean = clean.replace(/<\/?([a-z0-9]+)\b[^>]*>/gi, (match, tagName) => {
