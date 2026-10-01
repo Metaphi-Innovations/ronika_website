@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { getGalleryCategories, getGalleryImages, GalleryCategoryData, GalleryImageData } from '../api/galleryApi';
 import { getImageUrl } from '../utils/imageUrl';
 import { useSite } from '../context/SiteContext';
 import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import LightboxModal from '../components/LightboxModal';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './GalleryPage.css';
 
 export interface GalleryDisplayItem {
@@ -23,41 +24,47 @@ export default function GalleryPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    Promise.all([getGalleryCategories(), getGalleryImages()])
-      .then(([cats, imgs]) => {
-        if (!isMounted) return;
-        setCategories(cats);
-        setImages(imgs);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.warn('Failed to load gallery data from CMS:', err);
-        if (isMounted) setLoading(false);
-      });
-
-    return () => { isMounted = false; };
+  const fetchGalleryData = useCallback(async () => {
+    try {
+      const [cats, imgs] = await Promise.all([getGalleryCategories(), getGalleryImages()]);
+      setCategories(cats);
+      setImages(imgs);
+    } catch (err) {
+      console.warn('Failed to load gallery data from CMS:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchGalleryData();
+  }, [fetchGalleryData]);
+
+  // Live CMS Synchronization for Gallery and Categories
+  useLiveResource(['gallery', 'galleryCategories'], () => {
+    fetchGalleryData();
+  });
 
   const displayItems: GalleryDisplayItem[] = useMemo(() => {
     if (!images || images.length === 0) return [];
     const sorted = [...images].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     return sorted.map((img) => {
       const catObj = typeof img.category === 'object' && img.category ? img.category : null;
-      const catName = catObj ? catObj.name : 'Gallery';
       const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
+      const matchedCat = categories.find((c) => String(c._id) === String(catId));
+      const catName = matchedCat?.name || 'Gallery';
+      const resolvedCatId = matchedCat ? matchedCat._id : '';
       return {
         id: img._id,
         src: getImageUrl(img.image?.url),
         caption: img.title || img.caption || 'Artwork',
         projectTitle: img.title || 'Artwork',
         categoryName: catName,
-        categoryId: catId,
+        categoryId: resolvedCatId,
         projectSlug: img.projectSlug,
       };
     });
-  }, [images]);
+  }, [images, categories]);
 
   const filteredItems = useMemo(() => {
     if (activeCategory === "ALL") return displayItems;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { SiteProvider } from './context/SiteContext';
+import { LiveSyncProvider } from './context/LiveSyncContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -17,8 +18,9 @@ import './styles/global.css';
 
 export default function App() {
   return (
-    <SiteProvider>
-      <Router>
+    <LiveSyncProvider>
+      <SiteProvider>
+        <Router>
         <ScrollToTop />
         <Navbar />
         <main className="main-content">
@@ -38,5 +40,6 @@ export default function App() {
         <Footer />
       </Router>
     </SiteProvider>
+    </LiveSyncProvider>
   );
 }

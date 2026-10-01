@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { getProjects, getCategories, CategoryData } from '../api/projectsApi';
 import { adaptApiProject } from '../utils/projectAdapter';
 import type { Project } from '../types/portfolio';
 import ProjectCard from '../components/ProjectCard';
 import ScrollReveal from '../components/ScrollReveal';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './WorkPage.css';
 
 export default function WorkPage() {
@@ -13,25 +14,28 @@ export default function WorkPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    Promise.all([getProjects(), getCategories()])
-      .then(([apiProjects, apiCategories]) => {
-        if (!isMounted) return;
-        setProjects(apiProjects.map(adaptApiProject));
-        setCategories(apiCategories);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.warn('Failed to load projects from CMS:', err);
-        if (isMounted) {
-          setError('Unable to load projects');
-          setLoading(false);
-        }
-      });
-
-    return () => { isMounted = false; };
+  const fetchWorkData = useCallback(async () => {
+    try {
+      const [apiProjects, apiCategories] = await Promise.all([getProjects(), getCategories()]);
+      setProjects(apiProjects.map(adaptApiProject));
+      setCategories(apiCategories);
+      setError(null);
+    } catch (err: any) {
+      console.warn('Failed to load projects from CMS:', err);
+      setError('Unable to load projects. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchWorkData();
+  }, [fetchWorkData]);
+
+  // Live CMS Synchronization for Projects and Categories
+  useLiveResource(['projects', 'categories'], () => {
+    fetchWorkData();
+  });
 
   useEffect(() => {
     if (selectedCat !== 'All' && categories.length > 0 && !categories.some((c) => c.name === selectedCat)) {

@@ -1,31 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAboutContent, AboutContentData } from '../api/contentApi';
 import { getImageUrl } from '../utils/imageUrl';
 import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import ServicesSection from '../components/ServicesSection';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './AboutPage.css';
 
 export default function AboutPage() {
   const [content, setContent] = useState<AboutContentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    getAboutContent()
-      .then((data) => {
-        if (isMounted) {
-          setContent(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.warn('Failed to load About content from API:', err);
-        if (isMounted) setLoading(false);
-      });
-
-    return () => { isMounted = false; };
+  const fetchAboutData = useCallback(async () => {
+    try {
+      const data = await getAboutContent();
+      setContent(data);
+    } catch (err) {
+      console.warn('Failed to load About content from API:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAboutData();
+  }, [fetchAboutData]);
+
+  // Live CMS Synchronization for About & Services
+  useLiveResource(['about', 'services'], () => {
+    fetchAboutData();
+  });
 
   const headingText = content?.heading || '';
   const isHeadingHtml = isHtmlString(headingText);

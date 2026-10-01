@@ -1,23 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowUpRight, Instagram, Linkedin, Mail } from 'lucide-react';
 import { getContactContent, ContactContentData } from '../api/contentApi';
+import { getGmailComposeUrl } from '../utils/mail';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './ContactPage.css';
 
 export default function ContactPage() {
   const [content, setContent] = useState<ContactContentData | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    getContactContent()
-      .then((data) => {
-        if (isMounted) setContent(data);
-      })
-      .catch((err) => {
-        console.warn('Failed to load Contact content from API:', err);
-      });
-
-    return () => { isMounted = false; };
+  const fetchContactData = useCallback(async () => {
+    try {
+      const data = await getContactContent();
+      setContent(data);
+    } catch (err) {
+      console.warn('Failed to load Contact content from API:', err);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchContactData();
+  }, [fetchContactData]);
+
+  // Live CMS Synchronization for Contact Details
+  useLiveResource(['contact', 'settings'], () => {
+    fetchContactData();
+  });
 
   const headline = content?.heading;
   const email = content?.email;
@@ -49,7 +56,12 @@ export default function ContactPage() {
           {(email || description) && (
             <div className="contact-info-block">
               {email && (
-                <a href={`mailto:${email}`} className="huge-contact-link link-underline">
+                <a
+                  href={getGmailComposeUrl(email)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="huge-contact-link link-underline"
+                >
                   {email} <ArrowUpRight size={28} style={{display:'inline', verticalAlign: 'middle'}}/>
                 </a>
               )}
@@ -77,7 +89,12 @@ export default function ContactPage() {
                 </a>
               )}
               {email && (
-                <a href={`mailto:${email}`} className="social-link">
+                <a
+                  href={getGmailComposeUrl(email)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
                   <Mail size={18} /> Gmail
                 </a>
               )}

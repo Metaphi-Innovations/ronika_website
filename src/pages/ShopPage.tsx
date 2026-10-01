@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { getShopCategories, getShopProducts, ApiShopCategory, ApiShopProduct } from '../api/shopApi';
 import { adaptApiShopProduct } from '../utils/shopAdapter';
 import type { ShopProduct } from '../types/shop';
 import ShopProductCard from '../components/ShopProductCard';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './ShopPage.css';
 
 export default function ShopPage() {
@@ -11,22 +12,26 @@ export default function ShopPage() {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    Promise.all([getShopCategories(), getShopProducts()])
-      .then(([apiCats, apiProds]) => {
-        if (!isMounted) return;
-        setCategories(apiCats);
-        setProducts(apiProds.map(adaptApiShopProduct));
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.warn('Failed to load shop data from API:', err);
-        if (isMounted) setLoading(false);
-      });
-
-    return () => { isMounted = false; };
+  const fetchShopData = useCallback(async () => {
+    try {
+      const [apiCats, apiProds] = await Promise.all([getShopCategories(), getShopProducts()]);
+      setCategories(apiCats);
+      setProducts(apiProds.map(adaptApiShopProduct));
+    } catch (err) {
+      console.warn('Failed to load shop data from API:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchShopData();
+  }, [fetchShopData]);
+
+  // Live CMS Synchronization for Shop products and categories
+  useLiveResource(['shop', 'shopCategories'], () => {
+    fetchShopData();
+  });
 
   const categoryPills = useMemo(() => {
     const list = ["ALL"];

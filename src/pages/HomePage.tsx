@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getHomeContent, HomeContentData } from '../api/contentApi';
 import { getCategories } from '../api/projectsApi';
@@ -6,6 +6,7 @@ import { getImageUrl } from '../utils/imageUrl';
 import ScrollReveal from '../components/ScrollReveal';
 import ServicesSection from '../components/ServicesSection';
 import { sanitizeRichText, isHtmlString } from '../utils/richText';
+import { useLiveResource } from '../context/LiveSyncContext';
 import './HomePage.css';
 
 interface StandoutWork {
@@ -22,63 +23,65 @@ export default function HomePage() {
   const [colCount, setColCount] = useState(3);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    Promise.all([
-      getHomeContent(),
-      getCategories().catch(() => []),
-    ])
-      .then(([homeData, categoriesData]) => {
-        if (!isMounted) return;
-        setHomeContent(homeData);
+  const fetchHomeData = useCallback(async () => {
+    try {
+      const [homeData, categoriesData] = await Promise.all([
+        getHomeContent(),
+        getCategories().catch(() => []),
+      ]);
+      setHomeContent(homeData);
 
-        const categoryMap = new Map<string, string>();
-        if (Array.isArray(categoriesData)) {
-          categoriesData.forEach((c) => {
-            if (c._id && c.name) categoryMap.set(c._id, c.name);
+      const categoryMap = new Map<string, string>();
+      if (Array.isArray(categoriesData)) {
+        categoriesData.forEach((c) => {
+          if (c._id && c.name) categoryMap.set(c._id, c.name);
+        });
+      }
+
+      let list: StandoutWork[] = [];
+      // STRICT: ONLY show projects that the admin has explicitly configured and saved in featuredProjects
+      if (homeData.featuredProjects && Array.isArray(homeData.featuredProjects) && homeData.featuredProjects.length > 0) {
+        list = homeData.featuredProjects
+          .filter((p: any) => p && typeof p === 'object' && p.published !== false)
+          .map((p: any) => {
+            let catName = '';
+            if (typeof p.category === 'object' && p.category?.name) {
+              catName = p.category.name;
+            } else if (typeof p.category === 'string' && p.category) {
+              catName = categoryMap.get(p.category) || (!/^[0-9a-fA-F]{24}$/.test(p.category) ? p.category : '');
+            }
+
+            const heroUrl = p.heroImage?.url
+              ? getImageUrl(p.heroImage.url)
+              : p.images && p.images[0]
+              ? getImageUrl(p.images[0].url)
+              : '';
+            return {
+              id: p._id || p.id,
+              projectSlug: p.slug,
+              title: p.title,
+              category: catName,
+              imageUrl: heroUrl,
+            };
           });
-        }
+      }
 
-        let list: StandoutWork[] = [];
-        // STRICT: ONLY show projects that the admin has explicitly configured and saved in featuredProjects
-        if (homeData.featuredProjects && Array.isArray(homeData.featuredProjects) && homeData.featuredProjects.length > 0) {
-          list = homeData.featuredProjects
-            .filter((p: any) => p && typeof p === 'object' && p.published !== false)
-            .map((p: any) => {
-              let catName = '';
-              if (typeof p.category === 'object' && p.category?.name) {
-                catName = p.category.name;
-              } else if (typeof p.category === 'string' && p.category) {
-                catName = categoryMap.get(p.category) || (!/^[0-9a-fA-F]{24}$/.test(p.category) ? p.category : '');
-              }
-
-              const heroUrl = p.heroImage?.url
-                ? getImageUrl(p.heroImage.url)
-                : p.images && p.images[0]
-                ? getImageUrl(p.images[0].url)
-                : '';
-              return {
-                id: p._id || p.id,
-                projectSlug: p.slug,
-                title: p.title,
-                category: catName,
-                imageUrl: heroUrl,
-              };
-            });
-        }
-
-        setFeaturedProjects(list);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.warn('Error fetching homepage CMS content:', err);
-        if (isMounted) setLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
+      setFeaturedProjects(list);
+    } catch (err) {
+      console.warn('Error fetching homepage CMS content:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchHomeData();
+  }, [fetchHomeData]);
+
+  // Live CMS Synchronization: Refetch automatically when Home, Projects, Categories or Services update
+  useLiveResource(['home', 'projects', 'categories', 'services'], () => {
+    fetchHomeData();
+  });
 
   useEffect(() => {
     const handleResize = () => {

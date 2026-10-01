@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSite } from '../context/SiteContext';
+import { getGmailComposeUrl } from '../utils/mail';
 import './Footer.css';
 
 export interface SocialLink {
@@ -26,11 +27,18 @@ export default function Footer() {
       .filter((b) => b.isActive !== false)
       .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    socialLinks = activeBtns.map((b) => ({
-      name: b.label,
-      url: b.url,
-      isExternal: !b.url.startsWith('mailto:'),
-    }));
+    socialLinks = activeBtns.map((b) => {
+      const isMail =
+        b.url.startsWith('mailto:') ||
+        b.label.toLowerCase().includes('gmail') ||
+        b.label.toLowerCase().includes('email') ||
+        (b.url.includes('@') && !b.url.startsWith('http'));
+      return {
+        name: b.label,
+        url: isMail ? getGmailComposeUrl(b.url) : b.url,
+        isExternal: true,
+      };
+    });
   } else if (settings?.socialLinks || settings?.contactEmail) {
     const links: SocialLink[] = [];
     if (settings.socialLinks?.instagram) {
@@ -43,7 +51,7 @@ export default function Footer() {
       links.push({ name: 'LinkedIn', url: settings.socialLinks.linkedin, isExternal: true });
     }
     if (settings.contactEmail) {
-      links.push({ name: 'Gmail', url: `mailto:${settings.contactEmail}`, isExternal: false });
+      links.push({ name: 'Gmail', url: getGmailComposeUrl(settings.contactEmail), isExternal: true });
     }
     socialLinks = links;
   }

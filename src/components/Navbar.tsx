@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useSite } from '../context/SiteContext';
+import { getGmailComposeUrl } from '../utils/mail';
 import './Navbar.css';
 
 export interface NavItem {
@@ -100,7 +101,14 @@ export default function Navbar() {
             <p className="mobile-drawer-tagline">Visual Designer &amp; Illustrator</p>
             <div className="mobile-drawer-pills">
               {email && (
-                <a href={`mailto:${email}`} className="mobile-drawer-pill">Gmail</a>
+                <a
+                  href={getGmailComposeUrl(email)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mobile-drawer-pill"
+                >
+                  Gmail
+                </a>
               )}
               {instagram && (
                 <a href={instagram} target="_blank" rel="noreferrer" className="mobile-drawer-pill">Instagram</a>

@@ -58,7 +58,12 @@ export default function ShopEnquiryPage() {
       <main className="shop-enquiry-page shop-not-found animate-fade-in">
         <div className="container" style={{ padding: '6rem 0', textAlign: 'center' }}>
           <h1 className="heading-1">Product Not Found</h1>
-          <button className="btn-shop-secondary" onClick={() => navigate('/shop')} style={{ marginTop: '1.5rem' }}>
+          <button
+            type="button"
+            className="btn-enquiry-continue"
+            onClick={() => navigate('/shop')}
+            style={{ marginTop: '1.5rem' }}
+          >
             Return to Shop
           </button>
         </div>
@@ -68,22 +73,83 @@ export default function ShopEnquiryPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let cleanValue = value;
+
+    // Strict input filtering:
+    // 1. Full Name: Reject all numbers as typed/pasted
+    if (name === 'name') {
+      cleanValue = value.replace(/[0-9]/g, '');
+    }
+    // 2. Phone / WhatsApp: Reject all alphabetical letters and words as typed/pasted
+    else if (name === 'phone') {
+      cleanValue = value.replace(/[^\d+\s\-()]/g, '');
+    }
+
+    setFormData(prev => ({ ...prev, [name]: cleanValue }));
+    if (errorMessage) {
+      setErrorMessage('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    if (!formData.name.trim() || !formData.email.trim()) return;
+
+    const trimmedName = formData.name.trim();
+    const trimmedEmail = formData.email.trim();
+    const trimmedPhone = formData.phone.trim();
+    const trimmedMessage = formData.message.trim();
+
+    // 1. Required fields check
+    if (!trimmedName || !trimmedEmail || !trimmedMessage) {
+      setErrorMessage('Please fill in your name, email, and message before sending.');
+      return;
+    }
+
+    // 2. Name validation: strictly no numbers and minimum length
+    if (/\d/.test(trimmedName)) {
+      setErrorMessage('Full name cannot contain numbers. Please enter letters only.');
+      return;
+    }
+    if (trimmedName.length < 2) {
+      setErrorMessage('Full name must be at least 2 characters.');
+      return;
+    }
+
+    // 3. Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorMessage('Please provide a valid email address (e.g., name@example.com).');
+      return;
+    }
+
+    // 4. Phone validation: strictly no words/letters, 7-15 digits if provided
+    if (trimmedPhone) {
+      if (/[a-zA-Z]/.test(trimmedPhone)) {
+        setErrorMessage('Phone number cannot contain words or letters.');
+        return;
+      }
+      const digitsOnly = trimmedPhone.replace(/\D/g, '');
+      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        setErrorMessage('Please enter a valid phone number (7 to 15 digits).');
+        return;
+      }
+    }
+
+    // 5. Message validation
+    if (trimmedMessage.length < 5) {
+      setErrorMessage('Message must be at least 5 characters long.');
+      return;
+    }
 
     try {
       setSubmitting(true);
       setErrorMessage('');
       await submitShopEnquiry({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        message: formData.message.trim(),
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone,
+        message: trimmedMessage,
         productName: product.name,
         productSlug: product.slug,
         productId: product.id,
@@ -139,7 +205,11 @@ export default function ShopEnquiryPage() {
                 <p>
                   Thank you, {formData.name}. Your enquiry regarding <strong>{product.name}</strong> has been received. 
                 </p>
-                <button className="btn-shop-secondary mt-4" onClick={() => navigate('/shop')}>
+                <button
+                  type="button"
+                  className="btn-enquiry-continue"
+                  onClick={() => navigate('/shop')}
+                >
                   Continue Browsing
                 </button>
               </div>
@@ -181,6 +251,10 @@ export default function ShopEnquiryPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
+                      autoComplete="name"
+                      maxLength={80}
+                      pattern="^[A-Za-z\s'\.\-]+$"
+                      title="Full name cannot contain numbers. Only letters, spaces, hyphens, and apostrophes are allowed."
                       className="form-input"
                       placeholder="Jane Doe"
                     />
@@ -197,6 +271,8 @@ export default function ShopEnquiryPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
+                      autoComplete="email"
+                      maxLength={120}
                       className="form-input"
                       placeholder="jane@example.com"
                     />
@@ -207,8 +283,13 @@ export default function ShopEnquiryPage() {
                       type="tel" 
                       id="phone"
                       name="phone"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      maxLength={25}
                       value={formData.phone}
                       onChange={handleInputChange}
+                      pattern="^[\d\s+\-()]*$"
+                      title="Phone number can only contain numbers and dialing symbols (+, -, space). No letters."
                       className="form-input"
                       placeholder="+1 234 567 8900"
                     />
@@ -216,13 +297,15 @@ export default function ShopEnquiryPage() {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="message">Message</label>
+                  <label htmlFor="message">Message *</label>
                   <textarea 
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
                     required
+                    minLength={5}
+                    maxLength={2000}
                     className="form-input form-textarea"
                     placeholder="I am interested in purchasing this piece..."
                     rows={3}

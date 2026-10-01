@@ -238,6 +238,64 @@ button {
   color: var(--text-main);
 }
 
+/* Global Shop Action Buttons */
+.btn-shop-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, inherit);
+  background-color: var(--accent-color, #111111);
+  color: #ffffff;
+  border: 1px solid var(--accent-color, #111111);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-shop-primary:hover:not(:disabled) {
+  background-color: transparent;
+  color: var(--accent-color, #111111);
+}
+
+.btn-shop-secondary {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-family: var(--font-display, inherit);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background-color: var(--text-main, #111111);
+  color: #ffffff;
+  border: 1px solid var(--text-main, #111111);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+}
+
+.btn-shop-secondary:hover {
+  background-color: transparent;
+  color: var(--text-main, #111111);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.btn-shop-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-shop-secondary:focus-visible {
+  outline: 2px solid var(--text-main, #111111);
+  outline-offset: 3px;
+}
+
 .link-underline {
   position: relative;
   display: inline-block;
