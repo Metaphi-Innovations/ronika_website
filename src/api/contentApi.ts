@@ -23,6 +23,8 @@ export interface SiteSettingsData {
   footerText: string;
   logo?: string;
   galleryHeader?: string;
+  shopHeaderTitle?: string;
+  shopHeaderSubtitle?: string;
 }
 
 export interface HomeContentData {

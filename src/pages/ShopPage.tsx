@@ -4,6 +4,8 @@ import { adaptApiShopProduct } from '../utils/shopAdapter';
 import type { ShopProduct } from '../types/shop';
 import ShopProductCard from '../components/ShopProductCard';
 import { useLiveResource } from '../context/LiveSyncContext';
+import { useSite } from '../context/SiteContext';
+import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import './ShopPage.css';
 
 export default function ShopPage() {
@@ -11,6 +13,7 @@ export default function ShopPage() {
   const [products, setProducts] = useState<ShopProduct[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [loading, setLoading] = useState<boolean>(true);
+  const { settings } = useSite();
 
   const fetchShopData = useCallback(async () => {
     try {
@@ -54,10 +57,26 @@ export default function ShopPage() {
         
         {/* Shop Page Header */}
         <header className="shop-header">
-          <h1 className="heading-1 shop-page-title">Curated Prints &amp; Objects</h1>
-          <p className="shop-page-subtitle">
-            A curated selection of original artworks, limited edition prints, and exclusive objects.
-          </p>
+          {settings?.shopHeaderTitle && (
+            <h1 
+              className="heading-1 shop-page-title"
+              dangerouslySetInnerHTML={{ 
+                __html: isHtmlString(settings.shopHeaderTitle) 
+                  ? sanitizeRichText(settings.shopHeaderTitle) 
+                  : settings.shopHeaderTitle 
+              }}
+            />
+          )}
+          {settings?.shopHeaderSubtitle && (
+            <div 
+              className="shop-page-subtitle"
+              dangerouslySetInnerHTML={{ 
+                __html: isHtmlString(settings.shopHeaderSubtitle) 
+                  ? sanitizeRichText(settings.shopHeaderSubtitle) 
+                  : settings.shopHeaderSubtitle 
+              }}
+            />
+          )}
         </header>
 
         {/* Horizontal Category Filters */}
