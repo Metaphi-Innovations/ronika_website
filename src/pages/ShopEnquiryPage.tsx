@@ -6,6 +6,7 @@ import { submitShopEnquiry } from '../api/enquiryApi';
 import type { ShopProduct } from '../types/shop';
 import { ArrowLeft, CheckCircle2, ChevronDown } from 'lucide-react';
 import { COUNTRY_CODES } from '../utils/countryCodes';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import './ShopEnquiryPage.css';
 
 export default function ShopEnquiryPage() {
@@ -138,15 +139,19 @@ export default function ShopEnquiryPage() {
       return;
     }
 
-    // 4. Phone validation: strictly no words/letters, 7-15 digits if provided
+    // 4. Phone validation: strict country-specific formatting validation via libphonenumber-js
     if (trimmedPhone) {
       if (/[a-zA-Z]/.test(trimmedPhone)) {
         setErrorMessage('Phone number cannot contain words or letters.');
         return;
       }
-      const digitsOnly = trimmedPhone.replace(/\D/g, '');
-      if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-        setErrorMessage('Please enter a valid phone number (between 7 and 15 digits).');
+      try {
+        if (!isValidPhoneNumber(fullPhone)) {
+          setErrorMessage('Please enter a valid phone number for the selected country code.');
+          return;
+        }
+      } catch (error) {
+        setErrorMessage('Please enter a valid phone number for the selected country code.');
         return;
       }
     }
@@ -336,10 +341,24 @@ export default function ShopEnquiryPage() {
                           >
                             {COUNTRY_CODES.map((c) => (
                               <div
-                                key={c.country + c.code}
                                 onClick={() => {
-                                  setFormData(prev => ({ ...prev, countryCode: c.code }));
+                                  const newCode = c.code;
+                                  setFormData(prev => ({ ...prev, countryCode: newCode }));
                                   setIsDropdownOpen(false);
+                                  
+                                  // Instantly revalidate if phone is already entered
+                                  if (formData.phone.trim()) {
+                                    const fullPhone = `${newCode} ${formData.phone.trim()}`;
+                                    try {
+                                      if (!isValidPhoneNumber(fullPhone)) {
+                                        setErrorMessage('Please enter a valid phone number for the selected country code.');
+                                      } else if (errorMessage.includes('phone')) {
+                                        setErrorMessage('');
+                                      }
+                                    } catch (err) {
+                                      setErrorMessage('Please enter a valid phone number for the selected country code.');
+                                    }
+                                  }
                                 }}
                                 style={{
                                   padding: '8px 12px',
