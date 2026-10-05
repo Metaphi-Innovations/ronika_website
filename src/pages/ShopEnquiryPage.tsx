@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getShopProductBySlug } from '../api/shopApi';
 import { adaptApiShopProduct } from '../utils/shopAdapter';
 import { submitShopEnquiry } from '../api/enquiryApi';
 import type { ShopProduct } from '../types/shop';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronDown } from 'lucide-react';
+import { COUNTRY_CODES } from '../utils/countryCodes';
 import './ShopEnquiryPage.css';
 
 export default function ShopEnquiryPage() {
@@ -19,9 +20,22 @@ export default function ShopEnquiryPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    countryCode: '+1',
     phone: '',
     message: ''
   });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!productSlug) return;
@@ -71,7 +85,7 @@ export default function ShopEnquiryPage() {
     );
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     let cleanValue = value;
 
@@ -98,6 +112,7 @@ export default function ShopEnquiryPage() {
     const trimmedName = formData.name.trim();
     const trimmedEmail = formData.email.trim();
     const trimmedPhone = formData.phone.trim();
+    const fullPhone = trimmedPhone ? `${formData.countryCode} ${trimmedPhone}` : '';
     const trimmedMessage = formData.message.trim();
 
     // 1. Required fields check
@@ -117,9 +132,9 @@ export default function ShopEnquiryPage() {
     }
 
     // 3. Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9]+([._+-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(trimmedEmail)) {
-      setErrorMessage('Please provide a valid email address (e.g., name@example.com).');
+      setErrorMessage('Please enter a valid email address.');
       return;
     }
 
@@ -131,7 +146,7 @@ export default function ShopEnquiryPage() {
       }
       const digitsOnly = trimmedPhone.replace(/\D/g, '');
       if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-        setErrorMessage('Please enter a valid phone number (7 to 15 digits).');
+        setErrorMessage('Please enter a valid phone number (between 7 and 15 digits).');
         return;
       }
     }
@@ -148,7 +163,7 @@ export default function ShopEnquiryPage() {
       await submitShopEnquiry({
         name: trimmedName,
         email: trimmedEmail,
-        phone: trimmedPhone,
+        phone: fullPhone,
         message: trimmedMessage,
         productName: product.name,
         productSlug: product.slug,
@@ -191,7 +206,6 @@ export default function ShopEnquiryPage() {
               <div className="enquiry-product-details">
                 <span className="enquiry-product-category">{product.category}</span>
                 <h3 className="enquiry-product-name">{product.name}</h3>
-                <p className="enquiry-product-desc">{product.shortDescription}</p>
               </div>
             </div>
           </div>
@@ -272,27 +286,96 @@ export default function ShopEnquiryPage() {
                       onChange={handleInputChange}
                       required
                       autoComplete="email"
-                      maxLength={120}
+                      maxLength={100}
+                      pattern="^[a-zA-Z0-9]+([._+-][a-zA-Z0-9]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$"
+                      title="Please provide a valid professional email address. Special characters (like %, $) and consecutive dots are not allowed."
                       className="form-input"
                       placeholder="jane@example.com"
                     />
                   </div>
                   <div className="form-group">
                     <label htmlFor="phone">Phone / WhatsApp (Optional)</label>
-                    <input 
-                      type="tel" 
-                      id="phone"
-                      name="phone"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      maxLength={25}
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      pattern="^[\d\s+\-()]*$"
-                      title="Phone number can only contain numbers and dialing symbols (+, -, space). No letters."
-                      className="form-input"
-                      placeholder="+1 234 567 8900"
-                    />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div ref={dropdownRef} style={{ position: 'relative', width: '90px' }}>
+                        <div 
+                          className="form-input" 
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            padding: '0 8px',
+                            cursor: 'pointer',
+                            color: 'var(--admin-text-main)',
+                            userSelect: 'none'
+                          }}
+                        >
+                          <span>{formData.countryCode}</span>
+                          <div style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', display: 'flex' }}>
+                            <ChevronDown size={14} color="#666" />
+                          </div>
+                        </div>
+                        {isDropdownOpen && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              width: '240px',
+                              maxHeight: '200px',
+                              overflowY: 'auto',
+                              background: '#ffffff',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              marginTop: '4px',
+                              zIndex: 100,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              fontSize: '13px'
+                            }}
+                          >
+                            {COUNTRY_CODES.map((c) => (
+                              <div
+                                key={c.country + c.code}
+                                onClick={() => {
+                                  setFormData(prev => ({ ...prev, countryCode: c.code }));
+                                  setIsDropdownOpen(false);
+                                }}
+                                style={{
+                                  padding: '8px 12px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  borderBottom: '1px solid #f5f5f5',
+                                  color: 'var(--admin-text-main)'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              >
+                                <strong style={{ minWidth: '40px' }}>{c.code}</strong> 
+                                <span style={{ color: '#555' }}>{c.country}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input 
+                        type="tel" 
+                        id="phone"
+                        name="phone"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        maxLength={25}
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        pattern="^(?:[\s\-()]*\d[\s\-()]*){7,15}$"
+                        title="Phone number must contain between 7 and 15 digits. No letters allowed."
+                        className="form-input"
+                        placeholder="234 567 8900"
+                        style={{ flex: 1 }}
+                      />
+                    </div>
                   </div>
                 </div>
 

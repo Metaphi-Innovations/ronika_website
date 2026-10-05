@@ -61,9 +61,11 @@ export default function Footer() {
       <div className="container minimal-footer-container">
 
         {/* Banner Headline Callout */}
-        <h3 className="footer-cta-headline font-74">
-          LETS BUILD SOMETHING COOL TOGETHER :)
-        </h3>
+        {settings?.footerText && (
+          <h3 className="footer-cta-headline font-74">
+            {settings.footerText}
+          </h3>
+        )}
 
         {/* Secondary Nav Links */}
         <div className="footer-link">
