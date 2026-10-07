@@ -3,21 +3,23 @@ import type { Project } from '../types/portfolio';
 import { getImageUrl } from './imageUrl';
 
 export function adaptApiProject(apiProj: ApiProject): Project {
-  const categoryName = typeof apiProj.category === 'object' && apiProj.category
-    ? apiProj.category.name
-    : (typeof apiProj.category === 'string' && !/^[0-9a-fA-F]{24}$/.test(apiProj.category) ? apiProj.category : '');
+  const categoryName = typeof apiProj.category === 'string' ? apiProj.category : '';
 
   const heroUrl = apiProj.heroImage?.url
     ? getImageUrl(apiProj.heroImage.url)
     : (apiProj.images && apiProj.images.length > 0 ? getImageUrl(apiProj.images[0].url) : '');
 
-  const galleryImageUrls = (apiProj.images || [])
+  const galleryImageItems = (apiProj.images || [])
     .slice()
     .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .map((img) => getImageUrl(img.url));
+    .map((img) => ({
+      _id: img._id ? String(img._id) : '',
+      url: getImageUrl(img.url),
+      layouts: img.layouts
+    }));
 
   return {
-    id: apiProj._id,
+    id: apiProj._id ? String(apiProj._id) : '',
     slug: apiProj.slug,
     title: apiProj.title,
     subtitle: apiProj.subtitle || '',
@@ -25,7 +27,7 @@ export function adaptApiProject(apiProj: ApiProject): Project {
     year: apiProj.year || '',
     role: apiProj.role || '',
     heroImage: heroUrl,
-    images: galleryImageUrls,
+    images: galleryImageItems,
     description: apiProj.description || '',
     details: apiProj.details || '',
     tags: apiProj.tags || [],

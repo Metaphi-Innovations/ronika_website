@@ -89,7 +89,7 @@ footer .font-74 {
   gap: 16px;
   align-items: flex-start;
   width: 100%;
-  margin: 0;
+  margin: 40px 0 0 0;
 }
 
 footer h3.footer-contact-title {

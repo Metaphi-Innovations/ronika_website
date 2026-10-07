@@ -67,14 +67,6 @@ export default function Footer() {
           </h3>
         )}
 
-        {/* Secondary Nav Links */}
-        <div className="footer-link">
-          {navLinks.map((item) => (
-            <NavLink key={item.path} to={item.path} className="footer-nav-link">
-              {item.label}
-            </NavLink>
-          ))}
-        </div>
 
         {/* Contact Block */}
         <div className="footer-contact-block">

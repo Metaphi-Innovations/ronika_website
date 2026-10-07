@@ -9,6 +9,20 @@ export interface CategoryData {
   isActive: boolean;
 }
 
+export interface ILayoutItem {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface ILayouts {
+  lg?: ILayoutItem;
+  md?: ILayoutItem;
+  sm?: ILayoutItem;
+  xs?: ILayoutItem;
+}
+
 export interface ProjectImageData {
   _id?: string;
   url: string;
@@ -19,6 +33,7 @@ export interface ProjectImageData {
   aspectRatio: number;
   caption?: string;
   order: number;
+  layouts?: ILayouts;
 }
 
 export interface HeroImageData {
@@ -60,5 +75,5 @@ export async function getProjectBySlug(slugOrId: string): Promise<ApiProject> {
 }
 
 export async function getCategories(): Promise<CategoryData[]> {
-  return fetchApi<CategoryData[]>('/categories');
+  return fetchApi<CategoryData[]>('/projects/categories');
 }

@@ -32,7 +32,7 @@ export interface Project {
   year: string | number;
   role?: string;
   heroImage: string;
-  images: string[];
+  images: any[];
   description: string;
   details?: string;
   aspect?: 'portrait' | 'landscape' | 'square' | 'wide' | 'tall';

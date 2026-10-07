@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getAboutContent, AboutContentData } from '../api/contentApi';
+import { getAboutContent, AboutContentData, getHomeContent, HomeContentData } from '../api/contentApi';
 import { getImageUrl } from '../utils/imageUrl';
 import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import ServicesSection from '../components/ServicesSection';
@@ -9,14 +9,19 @@ import './AboutPage.css';
 
 export default function AboutPage() {
   const [content, setContent] = useState<AboutContentData | null>(null);
+  const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchAboutData = useCallback(async () => {
     try {
-      const data = await getAboutContent();
-      setContent(data);
+      const [aboutData, homeData] = await Promise.all([
+        getAboutContent(),
+        getHomeContent()
+      ]);
+      setContent(aboutData);
+      setHomeContent(homeData);
     } catch (err) {
-      console.warn('Failed to load About content from API:', err);
+      console.warn('Failed to load About/Home content from API:', err);
     } finally {
       setLoading(false);
     }
@@ -26,8 +31,8 @@ export default function AboutPage() {
     fetchAboutData();
   }, [fetchAboutData]);
 
-  // Live CMS Synchronization for About & Services
-  useLiveResource(['about', 'services'], () => {
+  // Live CMS Synchronization for About, Home & Services
+  useLiveResource(['about', 'home', 'services'], () => {
     fetchAboutData();
   });
 
@@ -120,7 +125,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <ServicesSection />
+      <ServicesSection sectionTitle={homeContent?.servicesSectionTitle} />
     </main>
   );
 }

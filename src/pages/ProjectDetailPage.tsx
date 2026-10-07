@@ -5,7 +5,8 @@ import { getProjectBySlug, getProjects, ApiProject } from '../api/projectsApi';
 import { adaptApiProject } from '../utils/projectAdapter';
 import type { Project } from '../types/portfolio';
 import ProjectCarousel from '../components/ProjectCarousel';
-import { generateProjectImageRows } from '../utils/imageLayout';
+import { MediaGridRenderer } from '../components/MediaGridRenderer';
+import { getImageUrl } from '../utils/imageUrl';
 import './ProjectDetailPage.css';
 
 export default function ProjectDetailPage() {
@@ -73,14 +74,11 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const galleryItems = (project.images || []).map((img, idx) => ({
-    src: img,
-    caption: `Visual Output ${String(idx + 1).padStart(2, '0')}`,
-    originalIndex: idx
+  const galleryItems = (project.images || []).map((img: any, idx: number) => ({
+    id: img._id || String(idx),
+    url: img.url,
+    layouts: img.layouts
   }));
-
-  // Dynamic row distribution calculated via generateProjectImageRows algorithm
-  const imageRows = generateProjectImageRows(galleryItems);
 
   return (
     <article className="psycolops-project-detail animate-fade-in">
@@ -180,38 +178,11 @@ export default function ProjectDetailPage() {
       </section>
 
       {/* 4. Dynamic Visual Gallery Section */}
-      {imageRows.length > 0 && (
+      {galleryItems.length > 0 && (
         <section className="detail-gallery-stack">
           <div className="container">
             <div className="dynamic-gallery-rows-wrapper">
-              {imageRows.map((row, rowIndex) => {
-                const rowTypeClass = row.length === 1 ? 'row-single' : row.length === 2 ? 'row-double' : 'row-triple';
-                return (
-                  <div 
-                    key={rowIndex} 
-                    className={`gallery-layout-row ${rowTypeClass}`}
-                  >
-                    {row.map(({ item, position, ratio }) => (
-                      <div 
-                        key={item.originalIndex} 
-                        className={`gallery-image-item ratio-${ratio.replace(':', '-')}`}
-                        style={{
-                          aspectRatio: ratio === '16:9' ? '16 / 9' : ratio === '4:3' ? '4 / 3' : '1 / 1'
-                        }}
-                      >
-                        <div className="gallery-visual-frame">
-                          <img 
-                            src={item.src} 
-                            alt={item.caption} 
-                            loading="lazy"
-                            className="gallery-responsive-img"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+               <MediaGridRenderer items={galleryItems} />
             </div>
           </div>
         </section>

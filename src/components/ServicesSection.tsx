@@ -41,7 +41,7 @@ export default function ServicesSection({ sectionTitle }: ServicesSectionProps) 
       });
 
     return () => { isMounted = false; };
-  }, []);
+  }, [sectionTitle]);
 
   const displayTitle = sectionTitle || 'Services I offer:';
 

@@ -68,6 +68,16 @@ export default function ProjectCarousel({
     }
   }, [isTransitioning]);
 
+  // Auto-slide functionality
+  useEffect(() => {
+    if (realCount <= 3) return;
+    const interval = setInterval(() => {
+      handleNext();
+    }, 4000); // Auto-slide every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [realCount, currentIndex, isTransitioning]);
+
   return (
     <section className="project-carousel-section">
       <div className="container">
@@ -81,28 +91,31 @@ export default function ProjectCarousel({
         <div className="carousel-wrapper">
           
           {/* Side Floating Left Arrow */}
-          <button 
-            type="button"
-            className="carousel-side-arrow arrow-left" 
-            onClick={handlePrev}
-            aria-label="Previous projects"
-          >
-            <ChevronLeft size={26} strokeWidth={2.5} />
-          </button>
+          {realCount > 3 && (
+            <button 
+              type="button"
+              className="carousel-side-arrow arrow-left" 
+              onClick={handlePrev}
+              aria-label="Previous projects"
+            >
+              <ChevronLeft size={26} strokeWidth={2.5} />
+            </button>
+          )}
 
           {/* Sliding Viewport */}
           <div className="carousel-viewport">
             <div 
               className="carousel-track"
               style={{
-                transform: `translateX(calc(-${currentIndex} * (100% / 3 + 10px)))`,
-                transition: isTransitioning ? 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)' : 'none'
+                transform: realCount <= 3 ? 'none' : `translateX(calc(-${currentIndex} * (100% / 3 + 10px)))`,
+                transition: isTransitioning && realCount > 3 ? 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+                justifyContent: realCount <= 3 ? 'center' : 'flex-start'
               }}
-              onTransitionEnd={handleTransitionEnd}
+              onTransitionEnd={realCount > 3 ? handleTransitionEnd : undefined}
             >
-              {extendedProjects.map((proj, idx) => (
+              {(realCount <= 3 ? projects : extendedProjects).map((proj, idx) => (
                 <Link 
-                  key={`${proj.id}-clone-${idx}`} 
+                  key={`${proj.id}-${realCount <= 3 ? 'real' : 'clone'}-${idx}`} 
                   to={`/project/${proj.slug}`} 
                   className="carousel-card"
                 >
@@ -120,7 +133,6 @@ export default function ProjectCarousel({
                         {proj.title} <span className="carousel-card-category-tag">({proj.category.split('&')[0].trim()})</span>
                       </h4>
                     </div>
-                    <p className="carousel-card-desc">{proj.description}</p>
                   </div>
                 </Link>
               ))}
@@ -128,14 +140,16 @@ export default function ProjectCarousel({
           </div>
 
           {/* Side Floating Right Arrow */}
-          <button 
-            type="button"
-            className="carousel-side-arrow arrow-right" 
-            onClick={handleNext}
-            aria-label="Next projects"
-          >
-            <ChevronRight size={26} strokeWidth={2.5} />
-          </button>
+          {realCount > 3 && (
+            <button 
+              type="button"
+              className="carousel-side-arrow arrow-right" 
+              onClick={handleNext}
+              aria-label="Next projects"
+            >
+              <ChevronRight size={26} strokeWidth={2.5} />
+            </button>
+          )}
 
         </div>
 

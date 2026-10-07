@@ -34,8 +34,8 @@
 }
 
 .gallery-subtitle-text p {
-  margin: 0;
-  display: inline;
+  margin: 0 0 0.25em 0;
+  display: block;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;

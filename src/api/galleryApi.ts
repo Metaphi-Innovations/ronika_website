@@ -9,6 +9,20 @@ export interface GalleryCategoryData {
   isActive: boolean;
 }
 
+export interface ILayoutItem {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface ILayouts {
+  lg?: ILayoutItem;
+  md?: ILayoutItem;
+  sm?: ILayoutItem;
+  xs?: ILayoutItem;
+}
+
 export interface GalleryImageData {
   _id: string;
   title: string;
@@ -25,10 +39,11 @@ export interface GalleryImageData {
   caption?: string;
   displayOrder: number;
   published: boolean;
+  layouts?: ILayouts;
 }
 
 export async function getGalleryCategories(): Promise<GalleryCategoryData[]> {
-  return fetchApi<GalleryCategoryData[]>('/gallery/categories');
+  return fetchApi<GalleryCategoryData[]>('/projects/categories');
 }
 
 export async function getGalleryImages(categoryId?: string): Promise<GalleryImageData[]> {

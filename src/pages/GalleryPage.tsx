@@ -4,6 +4,7 @@ import { getImageUrl } from '../utils/imageUrl';
 import { useSite } from '../context/SiteContext';
 import { isHtmlString, sanitizeRichText } from '../utils/richText';
 import LightboxModal from '../components/LightboxModal';
+import { MediaGridRenderer } from '../components/MediaGridRenderer';
 import { useLiveResource } from '../context/LiveSyncContext';
 import './GalleryPage.css';
 
@@ -15,6 +16,7 @@ export interface GalleryDisplayItem {
   categoryName: string;
   categoryId?: string;
   projectSlug?: string;
+  layouts?: any;
 }
 
 export default function GalleryPage() {
@@ -51,7 +53,7 @@ export default function GalleryPage() {
     return sorted.map((img) => {
       const catObj = typeof img.category === 'object' && img.category ? img.category : null;
       const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
-      const matchedCat = categories.find((c) => String(c._id) === String(catId));
+      const matchedCat = categories.find((c) => String(c._id) === String(catId) || c.name === String(catId));
       const catName = matchedCat?.name || 'Gallery';
       const resolvedCatId = matchedCat ? matchedCat._id : '';
       return {
@@ -62,6 +64,7 @@ export default function GalleryPage() {
         categoryName: catName,
         categoryId: resolvedCatId,
         projectSlug: img.projectSlug,
+        layouts: img.layouts,
       };
     });
   }, [images, categories]);
@@ -96,34 +99,6 @@ export default function GalleryPage() {
   const isHeaderHtml = isHtmlString(headerContent);
   const sanitizedHeader = isHeaderHtml ? sanitizeRichText(headerContent) : headerContent;
 
-  // Responsive Column Count (Desktop: 3, Tablet: 2, Mobile: 1)
-  const [columnCount, setColumnCount] = useState<number>(3);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 600) {
-        setColumnCount(1);
-      } else if (window.innerWidth <= 1024) {
-        setColumnCount(2);
-      } else {
-        setColumnCount(3);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const masonryColumns = useMemo(() => {
-    const cols: Array<Array<{ item: GalleryDisplayItem; globalIndex: number }>> = Array.from(
-      { length: columnCount },
-      () => []
-    );
-    filteredItems.forEach((item, globalIndex) => {
-      cols[globalIndex % columnCount].push({ item, globalIndex });
-    });
-    return cols;
-  }, [filteredItems, columnCount]);
 
   return (
     <main className="psycolops-gallery-page animate-fade-in">
@@ -159,34 +134,18 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {/* 3-Column Masonry Exhibition Wall (1 2 3, 4 5 6, 7 8 9... Left to Right) */}
+          {/* Grid Rendering with React Grid Layout */}
           {loading ? (
             <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>Loading gallery...</div>
           ) : filteredItems.length === 0 ? (
             <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>No images found in this category.</div>
           ) : (
             <div className="psycolops-gallery-wall">
-              {masonryColumns.map((colGroup, colIdx) => (
-                <div key={colIdx} className="gallery-masonry-column">
-                  {colGroup.map(({ item, globalIndex }) => (
-                    <div
-                      key={item.id}
-                      className="gallery-wall-card"
-                      onClick={() => setLightboxIndex(globalIndex)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="gallery-card-frame">
-                        <img
-                          src={item.src}
-                          alt={item.caption}
-                          loading="lazy"
-                          className="gallery-card-img"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+              <MediaGridRenderer items={filteredItems.map(item => ({
+                id: item.id,
+                url: item.src,
+                layouts: item.layouts
+              }))} />
             </div>
           )}
 

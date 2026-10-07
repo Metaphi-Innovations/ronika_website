@@ -75,31 +75,7 @@ export default function ContactPage() {
             </div>
           )}
 
-          {/* Social Row */}
-          {(instagram || linkedin || email) && (
-            <div className="contact-social-row">
-              {instagram && (
-                <a href={instagram} target="_blank" rel="noreferrer" className="social-link">
-                  <Instagram size={18} /> Instagram
-                </a>
-              )}
-              {linkedin && (
-                <a href={linkedin} target="_blank" rel="noreferrer" className="social-link">
-                  <Linkedin size={18} /> LinkedIn
-                </a>
-              )}
-              {email && (
-                <a
-                  href={getGmailComposeUrl(email)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="social-link"
-                >
-                  <Mail size={18} /> Gmail
-                </a>
-              )}
-            </div>
-          )}
+
 
         </div>
       </section>
