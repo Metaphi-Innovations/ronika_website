@@ -50,7 +50,6 @@ export interface ApiProject {
   slug: string;
   subtitle?: string;
   category: CategoryData | string;
-  year?: string;
   role?: string;
   client?: string;
   description?: string;

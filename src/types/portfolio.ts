@@ -9,7 +9,6 @@ export type ProjectCategory =
 
 export interface ProjectMetadata {
   client?: string;
-  year?: string | number;
   role?: string;
   tools?: string[];
   deliverables?: string[];
@@ -29,7 +28,6 @@ export interface Project {
   title: string;
   subtitle?: string;
   category: ProjectCategory;
-  year: string | number;
   role?: string;
   heroImage: string;
   images: any[];

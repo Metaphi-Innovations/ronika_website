@@ -24,7 +24,6 @@ export function adaptApiProject(apiProj: ApiProject): Project {
     title: apiProj.title,
     subtitle: apiProj.subtitle || '',
     category: categoryName as any,
-    year: apiProj.year || '',
     role: apiProj.role || '',
     heroImage: heroUrl,
     images: galleryImageItems,
@@ -34,7 +33,6 @@ export function adaptApiProject(apiProj: ApiProject): Project {
     featured: apiProj.featured || false,
     metadata: {
       client: apiProj.client || '',
-      year: apiProj.year || '',
       role: apiProj.role || '',
     }
   };

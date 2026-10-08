@@ -77,7 +77,8 @@ export default function ProjectDetailPage() {
   const galleryItems = (project.images || []).map((img: any, idx: number) => ({
     id: img._id || String(idx),
     url: img.url,
-    layouts: img.layouts
+    layouts: img.layouts,
+    aspectRatio: img.aspectRatio
   }));
 
   return (
@@ -105,12 +106,6 @@ export default function ProjectDetailPage() {
                   <span>{project.tags[0].toUpperCase()}</span>
                 </>
               )}
-              {project.year && (
-                <>
-                  <span className="divider-bar">|</span>
-                  <span>{project.year}</span>
-                </>
-              )}
             </div>
             
             <h1 className="detail-title">{project.title}</h1>
@@ -131,28 +126,22 @@ export default function ProjectDetailPage() {
         <div className="container">
           <div className="narrative-grid">
             <div className="narrative-meta">
+              {project.title && (
+                <div className="meta-item">
+                  <span className="meta-label">TITLE</span>
+                  <p className="meta-value">{project.title}</p>
+                </div>
+              )}
               {project.metadata?.client && (
                 <div className="meta-item">
                   <span className="meta-label">CLIENT</span>
                   <p className="meta-value">{project.metadata.client}</p>
                 </div>
               )}
-              {((project.tags && project.tags.length > 0) || project.category) && (
-                <div className="meta-item">
-                  <span className="meta-label">SERVICES / DELIVERABLES</span>
-                  <p className="meta-value">{project.tags && project.tags.length > 0 ? project.tags.join(', ') : project.category}</p>
-                </div>
-              )}
               {project.role && (
                 <div className="meta-item">
                   <span className="meta-label">ROLE</span>
                   <p className="meta-value">{project.role}</p>
-                </div>
-              )}
-              {project.year && (
-                <div className="meta-item">
-                  <span className="meta-label">YEAR</span>
-                  <p className="meta-value">{project.year}</p>
                 </div>
               )}
             </div>

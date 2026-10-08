@@ -17,6 +17,7 @@ export interface GalleryDisplayItem {
   categoryId?: string;
   projectSlug?: string;
   layouts?: any;
+  aspectRatio?: number;
 }
 
 export default function GalleryPage() {
@@ -65,6 +66,7 @@ export default function GalleryPage() {
         categoryId: resolvedCatId,
         projectSlug: img.projectSlug,
         layouts: img.layouts,
+        aspectRatio: img.image?.aspectRatio,
       };
     });
   }, [images, categories]);
@@ -144,7 +146,8 @@ export default function GalleryPage() {
               <MediaGridRenderer items={filteredItems.map(item => ({
                 id: item.id,
                 url: item.src,
-                layouts: item.layouts
+                layouts: item.layouts,
+                aspectRatio: item.aspectRatio
               }))} />
             </div>
           )}

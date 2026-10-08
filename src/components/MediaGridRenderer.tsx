@@ -1,105 +1,80 @@
 import React, { useMemo } from 'react';
 import RGL from 'react-grid-layout';
+import { getImageUrl } from '../utils/imageUrl';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { useWidth } from '../hooks/useWidth';
-import { useDesignState } from '../hooks/useDesignState';
 
 const ReactGridLayout = RGL as any;
 
-export interface ILayoutItem {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-export interface ILayouts {
-  lg?: ILayoutItem;
-  md?: ILayoutItem;
-  sm?: ILayoutItem;
-  xs?: ILayoutItem;
-}
-
-export interface GridMediaItem {
-  id: string; // The _id from IImage or IGalleryImage
-  url: string;
-  layouts?: ILayouts;
-  caption?: string; // Optional caption for galleries
-}
-
 interface MediaGridRendererProps {
-  items: GridMediaItem[];
+  items: any[];
 }
 
-// Convert our custom layouts format to RGL's expected layouts format
-const mapItemsToRGL = (items: GridMediaItem[]) => {
-  const rglLayouts: any = { lg: [], md: [], sm: [], xs: [] };
-  
-  items.forEach((item, index) => {
-    ['lg', 'md', 'sm', 'xs'].forEach((bp) => {
-      const bLayout = item.layouts?.[bp as keyof ILayouts];
-      if (bLayout) {
-        rglLayouts[bp].push({
-          i: item.id,
-          x: bLayout.x,
-          y: bLayout.y,
-          w: bLayout.w,
-          h: bLayout.h,
-          static: true, // renderer is static
-        });
-      } else {
-        // Migration / Default layout fallback
-        rglLayouts[bp].push({
-          i: item.id,
-          x: (index * 2) % 12,
-          y: Math.floor((index * 2) / 12) * 2,
-          w: 2,
-          h: 2,
-          static: true,
-        });
-      }
-    });
-  });
-  
-  return rglLayouts;
-};
+const COLS = 48;
+const ROW_HEIGHT = 40;
+const MARGIN: [number, number] = [8, 8];
 
 export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) => {
-  const layouts = useMemo(() => mapItemsToRGL(items), [items]);
   const { width, ref } = useWidth();
-  const { breakpoint, cols } = useDesignState();
-
-  console.log("MediaGridRenderer items:", items);
-  console.log("MediaGridRenderer layouts:", layouts);
+  const layouts = useMemo(() => {
+    return items.map((item, index) => {
+      const itemId = String(item._id || item.id || index);
+      
+      if (item.layouts && item.layouts.lg) {
+        return {
+          i: itemId,
+          x: item.layouts.lg.x || 0,
+          y: item.layouts.lg.y || 0,
+          w: item.layouts.lg.w || 6,
+          h: item.layouts.lg.h || 6,
+          static: true,
+          isDraggable: false,
+          isResizable: false
+        };
+      }
+      
+      return null;
+    }).filter(Boolean) as any[];
+  }, [items]);
 
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="media-grid-renderer" ref={ref}>
+    <div className="media-grid-renderer" style={{ width: '100%' }} ref={ref}>
       {width > 0 && (
-        <ReactGridLayout
-          width={width}
-          className="layout"
-          layout={layouts[breakpoint]}
-          cols={cols}
-          rowHeight={100} // This should be consistent with admin. 
-          isDraggable={false}
-          isResizable={false}
-          compactType="vertical"
-          margin={[16, 16]}
-        >
-          {items.map((item) => (
-            <div key={item.id} className="grid-item-wrapper" style={{ overflow: 'hidden' }}>
+      <ReactGridLayout
+        className="layout"
+        layout={layouts}
+        cols={COLS}
+        rowHeight={ROW_HEIGHT}
+        width={width}
+        margin={MARGIN}
+        isDraggable={false}
+        isResizable={false}
+        isDroppable={false}
+        useCSSTransforms={true}
+        compactType={null}
+        preventCollision={true}
+      >
+        {items.map((item, index) => {
+          const itemId = String(item._id || item.id || index);
+          // Only render if we successfully mapped a layout for it
+          if (!layouts.find(l => l.i === itemId)) return null;
+
+          return (
+            <div key={itemId} style={{ overflow: 'hidden' }}>
               <img 
-                src={item.url} 
-                alt={item.caption || "Portfolio item"} 
-                style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                src={getImageUrl(item.url)} 
+                alt={item.caption || item.originalName || 'Gallery image'} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
                 loading="lazy"
+                draggable={false}
               />
             </div>
-          ))}
-        </ReactGridLayout>
+          );
+        })}
+      </ReactGridLayout>
       )}
     </div>
   );
