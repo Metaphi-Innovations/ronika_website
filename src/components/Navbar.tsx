@@ -14,8 +14,25 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { settings } = useSite();
 
-  const email = settings?.contactEmail;
-  const instagram = settings?.socialLinks?.instagram;
+  let socialLinks: { name: string; url: string; isExternal: boolean }[] = [];
+  if (settings?.socialButtons && settings.socialButtons.length > 0) {
+    const activeBtns = settings.socialButtons
+      .filter((b) => b.isActive !== false && b.url && b.url.trim() !== '' && b.url.trim() !== '#')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    socialLinks = activeBtns.map((b) => {
+      const isMail =
+        b.url.startsWith('mailto:') ||
+        b.label.toLowerCase().includes('gmail') ||
+        b.label.toLowerCase().includes('email') ||
+        (b.url.includes('@') && !b.url.startsWith('http'));
+      return {
+        name: b.label,
+        url: isMail ? getGmailComposeUrl(b.url) : b.url,
+        isExternal: true,
+      };
+    });
+  }
 
   const navItems: NavItem[] = [
     { label: 'ABOUT', path: '/about' },
@@ -100,19 +117,17 @@ export default function Navbar() {
           <div className="mobile-drawer-footer">
             <p className="mobile-drawer-tagline">Visual Designer &amp; Illustrator</p>
             <div className="mobile-drawer-pills">
-              {email && (
+              {socialLinks.map((link) => (
                 <a
-                  href={getGmailComposeUrl(email)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  key={link.name}
+                  href={link.url}
+                  target={link.isExternal ? '_blank' : undefined}
+                  rel={link.isExternal ? 'noopener noreferrer' : undefined}
                   className="mobile-drawer-pill"
                 >
-                  Gmail
+                  {link.name}
                 </a>
-              )}
-              {instagram && (
-                <a href={instagram} target="_blank" rel="noreferrer" className="mobile-drawer-pill">Instagram</a>
-              )}
+              ))}
             </div>
           </div>
         </div>

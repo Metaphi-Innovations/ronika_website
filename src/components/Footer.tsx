@@ -24,7 +24,7 @@ export default function Footer() {
 
   if (settings?.socialButtons && settings.socialButtons.length > 0) {
     const activeBtns = settings.socialButtons
-      .filter((b) => b.isActive !== false)
+      .filter((b) => b.isActive !== false && b.url && b.url.trim() !== '' && b.url.trim() !== '#')
       .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     socialLinks = activeBtns.map((b) => {
@@ -39,21 +39,6 @@ export default function Footer() {
         isExternal: true,
       };
     });
-  } else if (settings?.socialLinks || settings?.contactEmail) {
-    const links: SocialLink[] = [];
-    if (settings.socialLinks?.instagram) {
-      links.push({ name: 'Instagram', url: settings.socialLinks.instagram, isExternal: true });
-    }
-    if (settings.socialLinks?.behance) {
-      links.push({ name: 'Behance', url: settings.socialLinks.behance, isExternal: true });
-    }
-    if (settings.socialLinks?.linkedin) {
-      links.push({ name: 'LinkedIn', url: settings.socialLinks.linkedin, isExternal: true });
-    }
-    if (settings.contactEmail) {
-      links.push({ name: 'Gmail', url: getGmailComposeUrl(settings.contactEmail), isExternal: true });
-    }
-    socialLinks = links;
   }
 
   return (

@@ -396,10 +396,13 @@
 .about-clean-img {
   width: 100%;
   max-width: 440px;
-  height: auto;
+  aspect-ratio: 3 / 4;
+  height: 100%; /* Or auto, but aspect-ratio dictates it */
   display: block;
   margin: 0 auto;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 4px; /* Optional, for aesthetics */
 }
 
 .home-about-actions {

@@ -232,10 +232,9 @@
 
 .about-illustration {
   width: 100%;
-  max-width: 520px;
-  height: auto;
-  max-height: calc(100vh - 120px);
-  object-fit: contain;
+  max-width: 380px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
   object-position: center;
   display: block;
   margin-left: auto;
@@ -283,8 +282,8 @@
   }
 
   .about-illustration {
-    max-width: 100%;
-    max-height: 60vh;
+    max-width: 380px;
+    max-height: none;
     margin-left: auto;
     margin-right: auto;
   }
@@ -306,7 +305,7 @@
   }
 
   .about-illustration {
-    max-height: 50vh;
+    max-height: none;
   }
 
   .about-main-heading {

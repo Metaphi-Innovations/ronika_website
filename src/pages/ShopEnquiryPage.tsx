@@ -87,22 +87,51 @@ export default function ShopEnquiryPage() {
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const target = e.target;
+    const { name, value } = target;
     let cleanValue = value;
+    
+    let selectionStart: number | null = null;
+    let selectionEnd: number | null = null;
+    
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      try {
+        selectionStart = target.selectionStart;
+        selectionEnd = target.selectionEnd;
+      } catch (err) {}
+    }
 
     // Strict input filtering:
     // 1. Full Name: Reject all numbers as typed/pasted
     if (name === 'name') {
       cleanValue = value.replace(/[0-9]/g, '');
     }
-    // 2. Phone / WhatsApp: Reject all alphabetical letters and words as typed/pasted
     else if (name === 'phone') {
       cleanValue = value.replace(/[^\d+\s\-()]/g, '');
+    }
+    // 3. Email Address: Convert to lowercase automatically
+    else if (name === 'email') {
+      cleanValue = value.toLowerCase();
     }
 
     setFormData(prev => ({ ...prev, [name]: cleanValue }));
     if (errorMessage) {
       setErrorMessage('');
+    }
+
+    // Restore cursor position if we modified the input programmatically
+    if (cleanValue !== value && selectionStart !== null && selectionEnd !== null) {
+      const diff = value.length - cleanValue.length;
+      const newStart = Math.max(0, selectionStart - diff);
+      const newEnd = Math.max(0, selectionEnd - diff);
+      
+      window.requestAnimationFrame(() => {
+        try {
+          if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+            target.setSelectionRange(newStart, newEnd);
+          }
+        } catch (err) {}
+      });
     }
   };
 
@@ -111,7 +140,7 @@ export default function ShopEnquiryPage() {
     if (submitting) return;
 
     const trimmedName = formData.name.trim();
-    const trimmedEmail = formData.email.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
     const trimmedPhone = formData.phone.trim();
     const fullPhone = trimmedPhone ? `${formData.countryCode} ${trimmedPhone}` : '';
     const trimmedMessage = formData.message.trim();
@@ -284,7 +313,8 @@ export default function ShopEnquiryPage() {
                   <div className="form-group">
                     <label htmlFor="email">Email Address *</label>
                     <input 
-                      type="email" 
+                      type="text" 
+                      inputMode="email"
                       id="email"
                       name="email"
                       value={formData.email}

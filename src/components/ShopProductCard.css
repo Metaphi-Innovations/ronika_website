@@ -107,10 +107,11 @@
   flex: 1;
   align-items: center;
   justify-content: center;
-  padding: 10px 0;
+  padding: 10px 0 !important;
+  margin: 0 !important;
   white-space: nowrap;
   font-family: var(--font-display);
-  font-size: 0.65rem;
+  font-size: 0.65rem !important;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
