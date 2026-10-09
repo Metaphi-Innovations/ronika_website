@@ -17,6 +17,7 @@ export interface GalleryDisplayItem {
   categoryId?: string;
   projectSlug?: string;
   layouts?: any;
+  layoutContexts?: Record<string, any>;
   aspectRatio?: number;
 }
 
@@ -66,18 +67,36 @@ export default function GalleryPage() {
         categoryId: resolvedCatId,
         projectSlug: img.projectSlug,
         layouts: img.layouts,
+        layoutContexts: img.layoutContexts,
         aspectRatio: img.image?.aspectRatio,
       };
     });
   }, [images, categories]);
 
   const filteredItems = useMemo(() => {
-    if (activeCategory === "ALL") return displayItems;
-    return displayItems.filter(item => {
-      if (item.categoryId && item.categoryId === activeCategory) return true;
-      return item.categoryName.toUpperCase() === activeCategory.toUpperCase();
-    });
-  }, [displayItems, activeCategory]);
+    let activeContextKey = "all";
+    if (activeCategory !== "ALL") {
+      const matchedCat = categories.find(c => c._id === activeCategory || c.name === activeCategory);
+      if (matchedCat) {
+        activeContextKey = matchedCat.name;
+      } else {
+        activeContextKey = activeCategory;
+      }
+    }
+    
+    let itemsToFilter = displayItems;
+    if (activeCategory !== "ALL") {
+      itemsToFilter = displayItems.filter(item => {
+        if (item.categoryId && item.categoryId === activeCategory) return true;
+        return item.categoryName.toUpperCase() === activeCategory.toUpperCase();
+      });
+    }
+
+    return itemsToFilter.map(item => ({
+      ...item,
+      layouts: item.layoutContexts?.[activeContextKey] || (activeContextKey === 'all' ? item.layouts : undefined)
+    }));
+  }, [displayItems, activeCategory, categories]);
 
   const categoryPills = useMemo(() => {
     const list = [{ id: 'ALL', name: 'ALL' }];

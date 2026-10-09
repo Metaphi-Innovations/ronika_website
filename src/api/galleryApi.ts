@@ -40,6 +40,7 @@ export interface GalleryImageData {
   displayOrder: number;
   published: boolean;
   layouts?: ILayouts;
+  layoutContexts?: Record<string, ILayouts>;
 }
 
 export async function getGalleryCategories(): Promise<GalleryCategoryData[]> {

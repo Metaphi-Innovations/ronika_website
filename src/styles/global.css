@@ -386,4 +386,9 @@ ul li::marker {
   font-size: 1.35em;
   font-weight: 800;
   color: var(--text-main, #111111);
+}
+
+/* Ensure empty paragraphs from rich text preserve intentional line breaks */
+p:empty, p:has(> br:only-child) {
+  min-height: 1.5em;
 }

@@ -85,7 +85,7 @@ export default function AboutPage() {
             
             <div className="about-body-text">
               {paragraphs.map((p, idx) => (
-                <p key={idx}>{p}</p>
+                <p key={idx}>{p.trim() === '' ? '\u00A0' : p}</p>
               ))}
             </div>
 

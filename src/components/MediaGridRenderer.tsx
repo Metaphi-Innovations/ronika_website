@@ -11,8 +11,8 @@ interface MediaGridRendererProps {
   items: any[];
 }
 
-const COLS = 48;
-const ROW_HEIGHT = 40;
+const COLS = 96;
+const ROW_HEIGHT = 16;
 const MARGIN: [number, number] = [8, 8];
 
 export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) => {
@@ -22,20 +22,31 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
       const itemId = String(item._id || item.id || index);
       
       if (item.layouts && item.layouts.lg) {
+        const l = item.layouts.lg;
+        const isV2 = l.v === 2;
         return {
           i: itemId,
-          x: item.layouts.lg.x || 0,
-          y: item.layouts.lg.y || 0,
-          w: item.layouts.lg.w || 6,
-          h: item.layouts.lg.h || 6,
+          x: isV2 ? l.x : (l.x * 2 || 0),
+          y: isV2 ? l.y : (l.y * 2 || 0),
+          w: isV2 ? l.w : (l.w * 2 || 32),
+          h: isV2 ? l.h : Math.max(1, l.h * 2 || 24),
           static: true,
           isDraggable: false,
           isResizable: false
         };
       }
       
-      return null;
-    }).filter(Boolean) as any[];
+      return {
+        i: itemId,
+        x: (index * 16) % COLS,
+        y: Math.floor((index * 16) / COLS) * 12,
+        w: 16,
+        h: 12,
+        static: true,
+        isDraggable: false,
+        isResizable: false
+      };
+    });
   }, [items]);
 
   if (!items || items.length === 0) return null;
@@ -54,8 +65,8 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
         isResizable={false}
         isDroppable={false}
         useCSSTransforms={true}
-        compactType={null}
-        preventCollision={true}
+        compactType="vertical"
+        preventCollision={false}
       >
         {items.map((item, index) => {
           const itemId = String(item._id || item.id || index);
@@ -63,7 +74,7 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
           if (!layouts.find(l => l.i === itemId)) return null;
 
           return (
-            <div key={itemId} style={{ overflow: 'hidden' }}>
+            <div key={itemId} data-grid={layouts.find(l => l.i === itemId)} style={{ overflow: 'hidden', width: '100%', height: '100%', minWidth: 0, minHeight: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img 
                 src={getImageUrl(item.url)} 
                 alt={item.caption || item.originalName || 'Gallery image'} 
