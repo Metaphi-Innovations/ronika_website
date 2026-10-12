@@ -4,30 +4,65 @@ import { getImageUrl } from '../utils/imageUrl';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { useWidth } from '../hooks/useWidth';
+import {
+  RGL_COLS,
+  RGL_ROW_HEIGHT,
+  RGL_MARGIN,
+  DEFAULT_ITEM_W,
+  DEFAULT_ITEM_H,
+  normalizeLayoutItem,
+  compactLayout
+} from '../utils/gridLayout';
 
 const ReactGridLayout = RGL as any;
 
 interface MediaGridRendererProps {
   items: any[];
+  preserveLayout?: boolean;
 }
 
-const COLS = 12;
-const ROW_HEIGHT = 150;
-const MARGIN: [number, number] = [10, 10];
-const DEFAULT_THUMBNAIL_W = 2;
-const DEFAULT_THUMBNAIL_H = 1;
-
-export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) => {
+export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, preserveLayout = false }) => {
   const { width, ref } = useWidth();
   const layouts = useMemo(() => {
+    // 1. Check if all items have valid normalized layouts
+    const allHaveNorm = items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg)));
+
+    // When preserveLayout is requested or all items have valid layouts, render exact saved coordinates directly!
+    if (preserveLayout || allHaveNorm) {
+      return items.map((item, index) => {
+        const itemId = String(item._id || item.id || index);
+        const norm = normalizeLayoutItem(item.layouts?.lg);
+        if (norm) {
+          return {
+            i: itemId,
+            x: norm.x,
+            y: norm.y,
+            w: norm.w,
+            h: norm.h,
+            static: true,
+            isDraggable: false,
+            isResizable: false
+          };
+        }
+        return {
+          i: itemId,
+          x: (index * DEFAULT_ITEM_W) % RGL_COLS,
+          y: Math.floor((index * DEFAULT_ITEM_W) / RGL_COLS) * DEFAULT_ITEM_H,
+          w: DEFAULT_ITEM_W,
+          h: DEFAULT_ITEM_H,
+          static: true,
+          isDraggable: false,
+          isResizable: false
+        };
+      });
+    }
+
+    // Default legacy path: slot missing items & compact
     let nextRowY = 0;
     items.forEach(item => {
-      const l = item.layouts?.lg;
-      if (l && typeof l.y === 'number' && typeof l.h === 'number') {
-        const isLegacy96 = l.w > COLS || l.h > 8;
-        const h = isLegacy96 ? Math.max(1, Math.round(l.h / 16)) : l.h;
-        const y = isLegacy96 ? Math.round((l.y || 0) / 16) : l.y;
-        const bottom = (y || 0) + (h || 1);
+      const norm = normalizeLayoutItem(item.layouts?.lg);
+      if (norm) {
+        const bottom = norm.y + norm.h;
         if (bottom > nextRowY) nextRowY = bottom;
       }
     });
@@ -35,23 +70,18 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
     let currentX = 0;
     let currentY = nextRowY;
 
-    return items.map((item, index) => {
+    // 2. Map items into layout elements
+    const initialElements = items.map((item, index) => {
       const itemId = String(item._id || item.id || index);
+      const norm = normalizeLayoutItem(item.layouts?.lg);
       
-      if (item.layouts && item.layouts.lg) {
-        const l = item.layouts.lg;
-        const isLegacy96 = l.w > COLS || l.h > 8;
-        const safeW = isLegacy96 ? Math.max(1, Math.min(COLS, Math.round(l.w / 8))) : Math.min(COLS, Math.max(1, l.w));
-        const safeH = isLegacy96 ? Math.max(1, Math.round(l.h / 16)) : Math.min(20, Math.max(1, l.h));
-        const safeX = isLegacy96 ? Math.round((l.x || 0) / 8) % COLS : Math.max(0, l.x || 0);
-        const safeY = isLegacy96 ? Math.round((l.y || 0) / 16) : Math.max(0, l.y || 0);
-
+      if (norm) {
         return {
           i: itemId,
-          x: safeX,
-          y: safeY,
-          w: safeW,
-          h: safeH,
+          x: norm.x,
+          y: norm.y,
+          w: norm.w,
+          h: norm.h,
           static: true,
           isDraggable: false,
           isResizable: false
@@ -61,26 +91,37 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
       const itemX = currentX;
       const itemY = currentY;
 
-      currentX += DEFAULT_THUMBNAIL_W;
-      if (currentX + DEFAULT_THUMBNAIL_W > COLS) {
+      currentX += DEFAULT_ITEM_W;
+      if (currentX + DEFAULT_ITEM_W > RGL_COLS) {
         currentX = 0;
-        currentY += DEFAULT_THUMBNAIL_H;
+        currentY += DEFAULT_ITEM_H;
       }
 
       return {
         i: itemId,
         x: itemX,
         y: itemY,
-        w: DEFAULT_THUMBNAIL_W,
-        h: DEFAULT_THUMBNAIL_H,
+        w: DEFAULT_ITEM_W,
+        h: DEFAULT_ITEM_H,
         static: true,
         isDraggable: false,
         isResizable: false
       };
     });
-  }, [items]);
+
+    // 3. Compact vertically to match Admin RGL compaction guarantees
+    const compacted = compactLayout(initialElements, RGL_COLS);
+    return compacted.map(item => ({
+      ...item,
+      static: true,
+      isDraggable: false,
+      isResizable: false
+    }));
+  }, [items, preserveLayout]);
 
   if (!items || items.length === 0) return null;
+
+  const isExactLayout = preserveLayout || (items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg))));
 
   return (
     <div className="media-grid-renderer" style={{ width: '100%' }} ref={ref}>
@@ -88,16 +129,16 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items }) =
       <ReactGridLayout
         className="layout"
         layout={layouts}
-        cols={COLS}
-        rowHeight={ROW_HEIGHT}
+        cols={RGL_COLS}
+        rowHeight={RGL_ROW_HEIGHT}
         width={width}
-        margin={MARGIN}
-        gridConfig={{ cols: COLS, rowHeight: ROW_HEIGHT, margin: MARGIN }}
+        margin={RGL_MARGIN}
+        gridConfig={{ cols: RGL_COLS, rowHeight: RGL_ROW_HEIGHT, margin: RGL_MARGIN }}
         isDraggable={false}
         isResizable={false}
         isDroppable={false}
         useCSSTransforms={true}
-        compactType="vertical"
+        compactType={isExactLayout ? null : "vertical"}
         preventCollision={false}
       >
         {items.map((item, index) => {

@@ -51,7 +51,8 @@ export default function GalleryPage() {
 
   const displayItems: GalleryDisplayItem[] = useMemo(() => {
     if (!images || images.length === 0) return [];
-    const sorted = [...images].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    const validImages = images.filter(img => img.published !== false && !(img as any).isDraft);
+    const sorted = [...validImages].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     return sorted.map((img) => {
       const catObj = typeof img.category === 'object' && img.category ? img.category : null;
       const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
@@ -75,27 +76,42 @@ export default function GalleryPage() {
 
   const filteredItems = useMemo(() => {
     let activeContextKey = "all";
+    let activeCatId = "";
     if (activeCategory !== "ALL") {
-      const matchedCat = categories.find(c => c._id === activeCategory || c.name === activeCategory);
+      const matchedCat = categories.find(c => c._id === activeCategory || c.name.toLowerCase() === activeCategory.toLowerCase());
       if (matchedCat) {
         activeContextKey = matchedCat.name;
+        activeCatId = matchedCat._id;
       } else {
         activeContextKey = activeCategory;
+        activeCatId = activeCategory;
       }
     }
     
     let itemsToFilter = displayItems;
     if (activeCategory !== "ALL") {
       itemsToFilter = displayItems.filter(item => {
-        if (item.categoryId && item.categoryId === activeCategory) return true;
-        return item.categoryName.toUpperCase() === activeCategory.toUpperCase();
+        if (item.categoryId && (item.categoryId === activeCategory || item.categoryId === activeCatId)) return true;
+        return item.categoryName.toUpperCase() === activeCategory.toUpperCase() ||
+          (activeContextKey && item.categoryName.toUpperCase() === activeContextKey.toUpperCase());
       });
     }
 
-    return itemsToFilter.map(item => ({
-      ...item,
-      layouts: item.layoutContexts?.[activeContextKey] || (activeContextKey === 'all' ? item.layouts : undefined)
-    }));
+    return itemsToFilter.map(item => {
+      let resolvedLayout = undefined;
+      if (activeCategory === "ALL") {
+        resolvedLayout = item.layoutContexts?.['all'] || item.layouts;
+      } else {
+        // Requirement 6: Use category's saved layout. Do not substitute the All layout.
+        resolvedLayout = item.layoutContexts?.[activeContextKey] 
+          || (activeCatId ? item.layoutContexts?.[activeCatId] : undefined);
+      }
+
+      return {
+        ...item,
+        layouts: resolvedLayout
+      };
+    });
   }, [displayItems, activeCategory, categories]);
 
   const categoryPills = useMemo(() => {
@@ -162,12 +178,15 @@ export default function GalleryPage() {
             <div style={{ padding: '4rem 0', textAlign: 'center', opacity: 0.6 }}>No images found in this category.</div>
           ) : (
             <div className="psycolops-gallery-wall">
-              <MediaGridRenderer items={filteredItems.map(item => ({
-                id: item.id,
-                url: item.src,
-                layouts: item.layouts,
-                aspectRatio: item.aspectRatio
-              }))} />
+              <MediaGridRenderer 
+                items={filteredItems.map(item => ({
+                  id: item.id,
+                  url: item.src,
+                  layouts: item.layouts,
+                  aspectRatio: item.aspectRatio
+                }))} 
+                preserveLayout={true}
+              />
             </div>
           )}
 
