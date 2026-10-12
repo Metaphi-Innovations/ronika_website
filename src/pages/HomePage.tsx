@@ -44,8 +44,8 @@ export default function HomePage() {
             const heroUrl = p.heroImage?.url
               ? getImageUrl(p.heroImage.url)
               : p.images && p.images[0]
-              ? getImageUrl(p.images[0].url)
-              : '';
+                ? getImageUrl(p.images[0].url)
+                : '';
             return {
               id: p._id || p.id,
               projectSlug: p.slug,

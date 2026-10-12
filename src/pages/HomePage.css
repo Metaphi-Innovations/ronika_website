@@ -69,7 +69,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0 48px 90px 48px;
+  padding: 0 48px;
   z-index: 2;
 }
 
@@ -78,7 +78,7 @@
   font-size: clamp(28px, 3.5vw, 56px);
   /* Noticeably smaller */
   font-weight: 400;
-  line-height: 1;
+  line-height: 1.15;
   margin: 0;
   letter-spacing: -0.01em;
   color: #1c1c1c;
@@ -103,13 +103,16 @@
 .editorial-styled-quote h5,
 .editorial-styled-quote h6,
 .editorial-styled-quote blockquote {
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+  padding: 0 !important;
+  line-height: inherit;
 }
 
 .editorial-styled-quote p+p,
 .editorial-styled-quote div+div {
-  margin-top: 0.4em;
+  margin-top: 0 !important;
 }
 
 .editorial-styled-quote strong,
@@ -155,6 +158,7 @@
   margin: 20px 0 0 0;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  max-width: 45%;
 }
 
 .highlight-script {
@@ -397,12 +401,14 @@
   width: 100%;
   max-width: 440px;
   aspect-ratio: 3 / 4;
-  height: 100%; /* Or auto, but aspect-ratio dictates it */
+  height: 100%;
+  /* Or auto, but aspect-ratio dictates it */
   display: block;
   margin: 0 auto;
   object-fit: cover;
   object-position: center;
-  border-radius: 4px; /* Optional, for aesthetics */
+  border-radius: 4px;
+  /* Optional, for aesthetics */
 }
 
 .home-about-actions {
@@ -562,7 +568,7 @@
   .editorial-hero-overlay-left {
     padding-left: 40px;
     padding-right: 40px;
-    padding-bottom: 70px;
+    padding-bottom: 0;
   }
 
   .psycolops-projects-exhibition,
@@ -583,7 +589,7 @@
   .editorial-hero-overlay-left {
     padding-left: 32px;
     padding-right: 32px;
-    padding-bottom: 50px;
+    padding-bottom: 0;
     background: linear-gradient(to right, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 100%);
   }
 
@@ -594,7 +600,8 @@
     padding-right: 40px;
   }
 
-  .editorial-styled-quote {
+  .editorial-styled-quote,
+  .editorial-quote-author {
     max-width: 80%;
   }
 
@@ -649,7 +656,8 @@
 }
 
 /* Touch device support: reveal project title & category overlay gracefully without requiring mouse hover */
-@media (hover: none), (max-width: 768px) {
+@media (hover: none),
+(max-width: 768px) {
   .standout-label-overlay {
     opacity: 1 !important;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%) !important;
@@ -678,7 +686,8 @@
     padding-right: 16px;
   }
 
-  .editorial-styled-quote {
+  .editorial-styled-quote,
+  .editorial-quote-author {
     max-width: 100%;
   }
 
