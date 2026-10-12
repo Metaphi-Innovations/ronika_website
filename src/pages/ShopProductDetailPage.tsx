@@ -184,16 +184,19 @@ export default function ShopProductDetailPage() {
 
             {/* Authentic CMS Product Details & Bullet Points */}
             {(detailsList.length > 0 || (product.details?.bulletPoints && product.details.bulletPoints.length > 0)) && (
-              <div className="shop-detail-features">
-                <ul>
-                  {detailsList.map((item, idx) => (
-                    <li key={`detail-${idx}`}><strong>{item.label}:</strong> {item.value}</li>
-                  ))}
-                  {product.details?.bulletPoints?.map((point, idx) => (
-                    <li key={`bullet-${idx}`}>{point}</li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <hr className="shop-detail-divider" />
+                <div className="shop-detail-features">
+                  <ul>
+                    {detailsList.map((item, idx) => (
+                      <li key={`detail-${idx}`}><strong>{item.label}:</strong> {item.value}</li>
+                    ))}
+                    {product.details?.bulletPoints?.map((point, idx) => (
+                      <li key={`bullet-${idx}`}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             )}
 
             <button className="btn-shop-primary shop-detail-cta" onClick={handleEnquiry}>
