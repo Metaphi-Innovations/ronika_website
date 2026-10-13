@@ -19,9 +19,10 @@ const ReactGridLayout = RGL as any;
 interface MediaGridRendererProps {
   items: any[];
   preserveLayout?: boolean;
+  onItemClick?: (index: number) => void;
 }
 
-export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, preserveLayout = false }) => {
+export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, preserveLayout = false, onItemClick }) => {
   const { width, ref } = useWidth();
   const layouts = useMemo(() => {
     // 1. Check if all items have valid normalized layouts
@@ -147,7 +148,22 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
           if (!layouts.find(l => l.i === itemId)) return null;
 
           return (
-            <div key={itemId} data-grid={layouts.find(l => l.i === itemId)} style={{ overflow: 'hidden', width: '100%', height: '100%', minWidth: 0, minHeight: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div 
+              key={itemId} 
+              data-grid={layouts.find(l => l.i === itemId)} 
+              style={{ 
+                overflow: 'hidden', 
+                width: '100%', 
+                height: '100%', 
+                minWidth: 0, 
+                minHeight: 0, 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                cursor: onItemClick ? 'pointer' : 'default'
+              }}
+              onClick={() => onItemClick && onItemClick(index)}
+            >
               <img 
                 src={getImageUrl(item.url)} 
                 alt={item.caption || item.originalName || 'Gallery image'} 

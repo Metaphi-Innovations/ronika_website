@@ -49,39 +49,78 @@ export default function GalleryPage() {
     fetchGalleryData();
   });
 
+  // Helper to reliably resolve category name and ID whether stored as string name, ID, or populated object
+  const resolveCategoryDetails = useCallback((cat: any) => {
+    if (!cat) return { name: 'Uncategorized', id: '' };
+    if (typeof cat === 'object') {
+      const found = categories.find(c => 
+        String(c._id) === String(cat._id) || 
+        c.name.toLowerCase() === (cat.name || '').toLowerCase()
+      );
+      if (found) return { name: found.name, id: String(found._id) };
+      if (cat.name) return { name: cat.name, id: String(cat._id || '') };
+    }
+    if (typeof cat === 'string') {
+      const trimmed = cat.trim();
+      const found = categories.find(c => 
+        String(c._id) === trimmed || 
+        c.name.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (found) return { name: found.name, id: String(found._id) };
+      return { name: trimmed, id: trimmed };
+    }
+    return { name: 'Uncategorized', id: '' };
+  }, [categories]);
+
+  // Helper to resolve layout from layoutContexts with case-insensitivity and fallback to all/master
+  const resolveLayout = useCallback((
+    layoutContexts: Record<string, any> | undefined,
+    contextKey: string,
+    contextId?: string
+  ) => {
+    if (!layoutContexts || typeof layoutContexts !== 'object') return undefined;
+    if (contextKey && layoutContexts[contextKey]) return layoutContexts[contextKey];
+    if (contextId && layoutContexts[contextId]) return layoutContexts[contextId];
+    if (contextKey) {
+      const lower = contextKey.toLowerCase();
+      const matchKey = Object.keys(layoutContexts).find(k => k.toLowerCase() === lower);
+      if (matchKey && layoutContexts[matchKey]) return layoutContexts[matchKey];
+    }
+    return undefined;
+  }, []);
+
   const displayItems: GalleryDisplayItem[] = useMemo(() => {
     if (!images || images.length === 0) return [];
     const validImages = images.filter(img => img.published !== false && !(img as any).isDraft);
     const sorted = [...validImages].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     return sorted.map((img) => {
-      const catObj = typeof img.category === 'object' && img.category ? img.category : null;
-      const catId = catObj ? catObj._id : (typeof img.category === 'string' ? img.category : '');
-      const matchedCat = categories.find((c) => String(c._id) === String(catId) || c.name === String(catId));
-      const catName = matchedCat?.name || 'Gallery';
-      const resolvedCatId = matchedCat ? matchedCat._id : '';
+      const catDetails = resolveCategoryDetails(img.category);
       return {
         id: img._id,
         src: getImageUrl(img.image?.url),
         caption: img.title || img.caption || 'Artwork',
         projectTitle: img.title || 'Artwork',
-        categoryName: catName,
-        categoryId: resolvedCatId,
+        categoryName: catDetails.name,
+        categoryId: catDetails.id,
         projectSlug: img.projectSlug,
         layouts: img.layouts,
         layoutContexts: img.layoutContexts,
         aspectRatio: img.image?.aspectRatio,
       };
     });
-  }, [images, categories]);
+  }, [images, categories, resolveCategoryDetails]);
 
   const filteredItems = useMemo(() => {
     let activeContextKey = "all";
     let activeCatId = "";
     if (activeCategory !== "ALL") {
-      const matchedCat = categories.find(c => c._id === activeCategory || c.name.toLowerCase() === activeCategory.toLowerCase());
+      const matchedCat = categories.find(c => 
+        String(c._id) === String(activeCategory) || 
+        c.name.toLowerCase() === activeCategory.toLowerCase()
+      );
       if (matchedCat) {
         activeContextKey = matchedCat.name;
-        activeCatId = matchedCat._id;
+        activeCatId = String(matchedCat._id);
       } else {
         activeContextKey = activeCategory;
         activeCatId = activeCategory;
@@ -91,20 +130,23 @@ export default function GalleryPage() {
     let itemsToFilter = displayItems;
     if (activeCategory !== "ALL") {
       itemsToFilter = displayItems.filter(item => {
-        if (item.categoryId && (item.categoryId === activeCategory || item.categoryId === activeCatId)) return true;
-        return item.categoryName.toUpperCase() === activeCategory.toUpperCase() ||
-          (activeContextKey && item.categoryName.toUpperCase() === activeContextKey.toUpperCase());
+        if (activeCatId && String(item.categoryId) === String(activeCatId)) return true;
+        if (activeCategory && String(item.categoryId) === String(activeCategory)) return true;
+        if (item.categoryName.toLowerCase() === activeCategory.toLowerCase()) return true;
+        if (activeContextKey && item.categoryName.toLowerCase() === activeContextKey.toLowerCase()) return true;
+        return false;
       });
     }
 
     return itemsToFilter.map(item => {
       let resolvedLayout = undefined;
       if (activeCategory === "ALL") {
-        resolvedLayout = item.layoutContexts?.['all'] || item.layouts;
+        resolvedLayout = resolveLayout(item.layoutContexts, 'all') || item.layouts;
       } else {
-        // Requirement 6: Use category's saved layout. Do not substitute the All layout.
-        resolvedLayout = item.layoutContexts?.[activeContextKey] 
-          || (activeCatId ? item.layoutContexts?.[activeCatId] : undefined);
+        // Use category's exact saved layout, fallback to 'all' layout, then item.layouts
+        resolvedLayout = resolveLayout(item.layoutContexts, activeContextKey, activeCatId)
+          || resolveLayout(item.layoutContexts, 'all')
+          || item.layouts;
       }
 
       return {
@@ -112,7 +154,7 @@ export default function GalleryPage() {
         layouts: resolvedLayout
       };
     });
-  }, [displayItems, activeCategory, categories]);
+  }, [displayItems, activeCategory, categories, resolveLayout]);
 
   const categoryPills = useMemo(() => {
     const list = [{ id: 'ALL', name: 'ALL' }];
@@ -182,10 +224,12 @@ export default function GalleryPage() {
                 items={filteredItems.map(item => ({
                   id: item.id,
                   url: item.src,
+                  caption: item.caption,
                   layouts: item.layouts,
                   aspectRatio: item.aspectRatio
                 }))} 
                 preserveLayout={true}
+                onItemClick={(idx) => setLightboxIndex(idx)}
               />
             </div>
           )}

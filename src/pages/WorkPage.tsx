@@ -18,7 +18,11 @@ export default function WorkPage() {
     try {
       const [apiProjects, apiCategories] = await Promise.all([getProjects(), getCategories()]);
       setProjects(apiProjects.map(adaptApiProject));
-      setCategories(apiCategories);
+      setCategories(
+        [...apiCategories].sort((a, b) =>
+          (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
+        )
+      );
       setError(null);
     } catch (err: any) {
       console.warn('Failed to load projects from CMS:', err);
