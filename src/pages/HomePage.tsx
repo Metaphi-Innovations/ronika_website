@@ -128,7 +128,7 @@ export default function HomePage() {
                       dangerouslySetInnerHTML={{ __html: sanitizedQuote }}
                     />
                   ) : (
-                    <p className="editorial-styled-quote" style={{ whiteSpace: 'pre-line' }}>
+                    <p className="editorial-styled-quote" style={{ whiteSpace: 'pre-wrap' }}>
                       {quoteText}
                     </p>
                   )

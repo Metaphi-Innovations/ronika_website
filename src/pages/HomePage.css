@@ -84,6 +84,7 @@
   color: #1c1c1c;
   max-width: 45%;
   text-align: left;
+  white-space: pre-wrap;
 }
 
 .editorial-styled-quote * {
