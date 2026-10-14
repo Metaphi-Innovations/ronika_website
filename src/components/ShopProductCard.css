@@ -69,6 +69,10 @@
   align-items: center;
   text-align: center;
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 4px;
 }
 
 .shop-product-name {
@@ -78,6 +82,12 @@
   color: var(--text-main);
   margin: 0;
   line-height: 1.2;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .shop-product-category {
