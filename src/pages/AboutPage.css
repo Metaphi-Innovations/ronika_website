@@ -28,8 +28,8 @@
   max-width: 1720px;
   margin: 0 auto;
   padding-top: 0 !important;
-  padding-left: 140px !important;
-  padding-right: 140px !important;
+  padding-left: 140px;
+  padding-right: 140px;
   box-sizing: border-box;
 }
 
@@ -251,6 +251,13 @@
 /* -----------------------------------------
    Responsive Adaptations
    ----------------------------------------- */
+@media (max-width: 1280px) {
+  .about-editorial-page .about-container {
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+}
+
 @media (max-width: 1199px) {
   .about-content-wrapper {
     grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
@@ -263,6 +270,11 @@
 }
 
 @media (max-width: 1023px) {
+  .about-editorial-page .about-container {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
   .about-editorial-page {
     height: auto;
     min-height: auto;

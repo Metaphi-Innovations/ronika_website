@@ -187,6 +187,7 @@
 .mobile-drawer-pills {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -243,10 +244,20 @@
   }
 
   .brand-name {
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .brand-title {
-    font-size: 9px;
+    font-size: 8.5px;
+  }
+
+  .mobile-nav-link {
+    font-size: 1.55rem;
+  }
+
+  .mobile-drawer-pill {
+    font-size: 13px;
+    padding: 7px 14px;
+    min-height: 38px;
   }
 }

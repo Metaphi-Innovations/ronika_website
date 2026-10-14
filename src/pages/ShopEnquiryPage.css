@@ -288,7 +288,17 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 1280px) {
+  .shop-enquiry-page .shop-enquiry-container {
+    padding: 0 80px;
+  }
+}
+
 @media (max-width: 1024px) {
+  .shop-enquiry-page .shop-enquiry-container {
+    padding: 0 40px;
+  }
+
   .shop-enquiry-layout {
     flex-direction: column;
     gap: 36px;
@@ -322,5 +332,21 @@
 
   .btn-submit-enquiry {
     width: 100%;
+  }
+
+  .enquiry-product-image-wrap {
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .shop-enquiry-page .shop-enquiry-container {
+    padding: 0 14px;
+  }
+
+  .shop-enquiry-form-section {
+    padding: 16px 12px;
   }
 }

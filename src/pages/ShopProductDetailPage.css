@@ -190,7 +190,7 @@
 .shop-detail-info {
   flex: 1;
   max-width: 520px;
-  min-width: 300px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow-wrap: break-word;
@@ -305,6 +305,12 @@
   }
 }
 
+@media (max-width: 1280px) {
+  .shop-detail-page .shop-detail-container {
+    padding: 0 80px;
+  }
+}
+
 @media (max-width: 1023px) {
   .shop-detail-page .shop-detail-container {
     padding: 0 40px;
@@ -361,16 +367,33 @@
     order: 3;
     margin-top: 16px;
   }
-  
-  /* We extract the header to the top visually by keeping it in the info panel 
-     but using a flex trick, or we can just keep the structure as:
-     Main Image -> Thumbnails -> Header & Info. 
-     To strictly follow the "Header -> Image -> Thumbnails -> Info" without refactoring JSX,
-     we just leave the DOM order, which puts Image -> Thumbnails -> Info. */
 }
 
 @media (max-width: 768px) {
   .shop-detail-page .shop-detail-container {
     padding: 0 20px;
+  }
+
+  .shop-detail-main-image-wrapper {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .shop-detail-info {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .shop-detail-page .shop-detail-container {
+    padding: 0 14px;
+  }
+
+  .shop-detail-arrow-btn {
+    width: 36px;
+    height: 36px;
   }
 }

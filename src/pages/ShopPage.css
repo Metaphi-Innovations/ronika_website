@@ -46,8 +46,16 @@
 }
 
 .shop-page-subtitle p {
-  margin: 0 0 0.25em 0;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   display: block;
+  line-height: inherit;
+}
+
+.shop-page-subtitle p + p,
+.shop-page-subtitle div + div {
+  margin-top: 0 !important;
 }
 
 .shop-page-subtitle em,
@@ -103,6 +111,12 @@
   .shop-product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 32px 24px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .shop-page .shop-container {
+    padding: 0 80px;
   }
 }
 
