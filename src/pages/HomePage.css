@@ -93,6 +93,7 @@
   color: inherit;
   line-height: inherit;
   letter-spacing: inherit;
+  white-space: inherit;
 }
 
 .editorial-styled-quote p,

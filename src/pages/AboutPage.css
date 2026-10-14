@@ -93,6 +93,7 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .about-main-heading p {
@@ -103,6 +104,7 @@
   font-weight: inherit;
   color: inherit;
   line-height: inherit;
+  white-space: inherit;
 }
 
 /* High-contrast Playfair Display Serif Italic matching editorial style */
@@ -135,6 +137,7 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 /* CTA Buttons matching exact reference */

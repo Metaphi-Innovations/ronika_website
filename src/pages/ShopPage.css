@@ -25,6 +25,7 @@
   letter-spacing: -0.025em;
   margin: 0 0 16px 0;
   text-transform: none;
+  white-space: pre-wrap;
 }
 
 .shop-page-title em,
@@ -43,6 +44,7 @@
   letter-spacing: -0.015em;
   max-width: 800px;
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .shop-page-subtitle p {
@@ -51,6 +53,7 @@
   margin-bottom: 0 !important;
   display: block;
   line-height: inherit;
+  white-space: inherit;
 }
 
 .shop-page-subtitle p + p,
