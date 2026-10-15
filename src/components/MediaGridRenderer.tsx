@@ -6,12 +6,12 @@ import 'react-resizable/css/styles.css';
 import { useWidth } from '../hooks/useWidth';
 import {
   RGL_COLS,
-  RGL_ROW_HEIGHT,
-  RGL_MARGIN,
   DEFAULT_ITEM_W,
   DEFAULT_ITEM_H,
   normalizeLayoutItem,
-  compactLayout
+  compactLayout,
+  getResponsiveGridConfig,
+  deriveMobileLayout
 } from '../utils/gridLayout';
 
 const ReactGridLayout = RGL as any;
@@ -24,13 +24,24 @@ interface MediaGridRendererProps {
 
 export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, preserveLayout = false, onItemClick }) => {
   const { width, ref } = useWidth();
+  
+  // Calculate responsive columns, row height, and margins based on current container width
+  const config = useMemo(() => getResponsiveGridConfig(width), [width]);
+
   const layouts = useMemo(() => {
-    // 1. Check if all items have valid normalized layouts
+    if (!items || items.length === 0) return [];
+
+    // On mobile (< 768px), derive an adaptive 6-column presentation that prevents
+    // items from collapsing into 20px vertical chimney tubes while preserving reading order
+    if (config.breakpoint === 'sm') {
+      return deriveMobileLayout(items, width, config);
+    }
+
+    // On Desktop and Tablet (>= 768px), render canonical desktop coordinates
     const allHaveNorm = items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg)));
 
-    // When preserveLayout is requested or all items have valid layouts, render exact saved coordinates directly!
     if (preserveLayout || allHaveNorm) {
-      return items.map((item, index) => {
+      const initialElements = items.map((item, index) => {
         const itemId = String(item._id || item.id || index);
         const norm = normalizeLayoutItem(item.layouts?.lg);
         if (norm) {
@@ -56,9 +67,17 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
           isResizable: false
         };
       });
+
+      const compacted = compactLayout(initialElements, RGL_COLS);
+      return compacted.map(item => ({
+        ...item,
+        static: true,
+        isDraggable: false,
+        isResizable: false
+      }));
     }
 
-    // Default legacy path: slot missing items & compact
+    // Default fallback path for unpositioned items
     let nextRowY = 0;
     items.forEach(item => {
       const norm = normalizeLayoutItem(item.layouts?.lg);
@@ -71,7 +90,6 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
     let currentX = 0;
     let currentY = nextRowY;
 
-    // 2. Map items into layout elements
     const initialElements = items.map((item, index) => {
       const itemId = String(item._id || item.id || index);
       const norm = normalizeLayoutItem(item.layouts?.lg);
@@ -110,7 +128,6 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
       };
     });
 
-    // 3. Compact vertically to match Admin RGL compaction guarantees
     const compacted = compactLayout(initialElements, RGL_COLS);
     return compacted.map(item => ({
       ...item,
@@ -118,63 +135,79 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
       isDraggable: false,
       isResizable: false
     }));
-  }, [items, preserveLayout]);
+  }, [items, preserveLayout, config.breakpoint, config.cols, width]);
 
   if (!items || items.length === 0) return null;
 
-  const isExactLayout = preserveLayout || (items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg))));
+  const isExactLayout = config.breakpoint !== 'sm' && (preserveLayout || (items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg)))));
 
   return (
-    <div className="media-grid-renderer" style={{ width: '100%' }} ref={ref}>
+    <div 
+      className="media-grid-renderer" 
+      style={{ 
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden' 
+      }} 
+      ref={ref}
+    >
       {width > 0 && (
-      <ReactGridLayout
-        className="layout"
-        layout={layouts}
-        cols={RGL_COLS}
-        rowHeight={RGL_ROW_HEIGHT}
-        width={width}
-        margin={RGL_MARGIN}
-        gridConfig={{ cols: RGL_COLS, rowHeight: RGL_ROW_HEIGHT, margin: RGL_MARGIN }}
-        isDraggable={false}
-        isResizable={false}
-        isDroppable={false}
-        useCSSTransforms={true}
-        compactType={isExactLayout ? null : "vertical"}
-        preventCollision={false}
-      >
-        {items.map((item, index) => {
-          const itemId = String(item._id || item.id || index);
-          // Only render if we successfully mapped a layout for it
-          if (!layouts.find(l => l.i === itemId)) return null;
+        <ReactGridLayout
+          className="layout"
+          layout={layouts}
+          cols={config.cols}
+          rowHeight={config.rowHeight}
+          width={width}
+          margin={config.margin}
+          gridConfig={{ cols: config.cols, rowHeight: config.rowHeight, margin: config.margin }}
+          isDraggable={false}
+          isResizable={false}
+          isDroppable={false}
+          useCSSTransforms={true}
+          compactType="vertical"
+          preventCollision={false}
+        >
+          {items.map((item, index) => {
+            const itemId = String(item._id || item.id || index);
+            if (!layouts.find(l => l.i === itemId)) return null;
 
-          return (
-            <div 
-              key={itemId} 
-              data-grid={layouts.find(l => l.i === itemId)} 
-              style={{ 
-                overflow: 'hidden', 
-                width: '100%', 
-                height: '100%', 
-                minWidth: 0, 
-                minHeight: 0, 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                cursor: onItemClick ? 'pointer' : 'default'
-              }}
-              onClick={() => onItemClick && onItemClick(index)}
-            >
-              <img 
-                src={getImageUrl(item.url)} 
-                alt={item.caption || item.originalName || 'Gallery image'} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-                loading="lazy"
-                draggable={false}
-              />
-            </div>
-          );
-        })}
-      </ReactGridLayout>
+            return (
+              <div 
+                key={itemId} 
+                data-grid={layouts.find(l => l.i === itemId)} 
+                style={{ 
+                  overflow: 'hidden', 
+                  width: '100%', 
+                  height: '100%', 
+                  minWidth: 0, 
+                  minHeight: 0, 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--bg-surface, #F7F6F2)',
+                  cursor: onItemClick ? 'pointer' : 'default',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+                onClick={() => onItemClick && onItemClick(index)}
+              >
+                <img 
+                  src={getImageUrl(item.url)} 
+                  alt={item.caption || item.originalName || 'Gallery artwork'} 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', 
+                    objectPosition: 'center', 
+                    display: 'block' 
+                  }}
+                  loading="lazy"
+                  draggable={false}
+                />
+              </div>
+            );
+          })}
+        </ReactGridLayout>
       )}
     </div>
   );
