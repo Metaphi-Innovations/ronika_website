@@ -41,7 +41,7 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
     const allHaveNorm = items.length > 0 && items.every(item => Boolean(normalizeLayoutItem(item.layouts?.lg)));
 
     if (preserveLayout || allHaveNorm) {
-      const initialElements = items.map((item, index) => {
+      return items.map((item, index) => {
         const itemId = String(item._id || item.id || index);
         const norm = normalizeLayoutItem(item.layouts?.lg);
         if (norm) {
@@ -67,14 +67,6 @@ export const MediaGridRenderer: React.FC<MediaGridRendererProps> = ({ items, pre
           isResizable: false
         };
       });
-
-      const compacted = compactLayout(initialElements, RGL_COLS);
-      return compacted.map(item => ({
-        ...item,
-        static: true,
-        isDraggable: false,
-        isResizable: false
-      }));
     }
 
     // Default fallback path for unpositioned items
